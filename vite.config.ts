@@ -28,4 +28,7 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    // server: {
+    //     host: 'http://inventory-management-system.local/'
+    // },
 });
