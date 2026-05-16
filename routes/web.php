@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -17,6 +18,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('suppliers', SupplierController::class);
     Route::patch('suppliers/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
+
+    Route::resource('products', ProductController::class);
+    Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

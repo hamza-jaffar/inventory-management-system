@@ -10,17 +10,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { SearchableSelect } from '@/components/searchable-select';
 import React, { FormEventHandler } from 'react';
 import categories from '@/routes/categories';
 
@@ -95,33 +89,21 @@ const CategoryCreate = ({ parentCategories }: CreateProps) => {
 
                         <div className="grid gap-2">
                             <Label htmlFor="parent_id">Parent Category</Label>
-                            <Select
-                                value={data.parent_id}
+                            <SearchableSelect
+                                options={[
+                                    { value: 'none', label: 'None (Top-level)' },
+                                    ...parentCategories.map((c) => ({
+                                        value: c.id.toString(),
+                                        label: c.name,
+                                    })),
+                                ]}
+                                value={data.parent_id || 'none'}
                                 onValueChange={(value) =>
-                                    setData(
-                                        'parent_id',
-                                        value === 'none' ? '' : value,
-                                    )
+                                    setData('parent_id', value === 'none' ? '' : value)
                                 }
-                            >
-                                <SelectTrigger
-                                    id="parent_id"
-                                    className="w-full"
-                                >
-                                    <SelectValue placeholder="Select a parent category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">None</SelectItem>
-                                    {parentCategories.map((category) => (
-                                        <SelectItem
-                                            key={category.id}
-                                            value={category.id.toString()}
-                                        >
-                                            {category.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                placeholder="Select parent category"
+                                searchPlaceholder="Search categories..."
+                            />
                             <InputError message={errors.parent_id} />
                         </div>
 
