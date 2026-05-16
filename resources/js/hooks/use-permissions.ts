@@ -13,7 +13,6 @@ export function usePermissions() {
     const roles = auth.roles || [];
 
     const can = (permission: string) => {
-        // Admin gets access to everything
         if (roles.includes('admin')) return true;
         return permissions.includes(permission);
     };

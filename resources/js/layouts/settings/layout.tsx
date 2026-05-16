@@ -10,32 +10,38 @@ import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
 import settings from '@/routes/settings';
-
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Settings',
-        href: settings.index(),
-        icon: null,
-    },
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
-];
+import { usePermissions } from '@/hooks/use-permissions';
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { can } = usePermissions();
+
+    const sidebarNavItems: NavItem[] = [
+        ...(can('view roles')
+            ? [
+                  {
+                      title: 'Settings',
+                      href: settings.index(),
+                      icon: null,
+                  },
+              ]
+            : []),
+        {
+            title: 'Profile',
+            href: edit(),
+            icon: null,
+        },
+        {
+            title: 'Security',
+            href: editSecurity(),
+            icon: null,
+        },
+        {
+            title: 'Appearance',
+            href: editAppearance(),
+            icon: null,
+        },
+    ];
 
     return (
         <div className="px-4 py-6">
