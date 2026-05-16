@@ -37,6 +37,14 @@ class PurchaseOrderService
             $query->where('status', $filters['status']);
         }
 
+        if (!empty($filters['start_date'])) {
+            $query->whereDate('ordered_at', '>=', $filters['start_date']);
+        }
+
+        if (!empty($filters['end_date'])) {
+            $query->whereDate('ordered_at', '<=', $filters['end_date']);
+        }
+
         if (!empty($filters['sort'])) {
             $sort = $filters['sort'];
             $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';

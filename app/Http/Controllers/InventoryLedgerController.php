@@ -14,7 +14,7 @@ class InventoryLedgerController extends Controller
 
     public function index(Request $request): Response
     {
-        $filters = $request->only(['product_id', 'search', 'start_date', 'end_date', 'sort']);
+        $filters = $request->only(['product_id', 'search', 'source_type', 'start_date', 'end_date', 'sort']);
         $ledgers = $this->inventoryLedgerService->getPaginated($filters);
 
         return inertia('inventory/ledgers/index', [

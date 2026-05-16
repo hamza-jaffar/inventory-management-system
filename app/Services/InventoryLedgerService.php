@@ -19,6 +19,10 @@ class InventoryLedgerService
             $query->where('product_id', $filters['product_id']);
         }
 
+        if (!empty($filters['source_type'])) {
+            $query->where('source_type', 'like', '%' . $filters['source_type'] . '%');
+        }
+
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->whereHas('product', function ($q) use ($search) {

@@ -15,6 +15,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
@@ -30,6 +37,7 @@ interface InventoryLedgerIndexProps {
     };
     filters: {
         search?: string;
+        source_type?: string;
         start_date?: string;
         end_date?: string;
     };
@@ -47,7 +55,12 @@ const InventoryLedgerIndex = ({
         e.preventDefault();
         router.get(
             '/inventory-ledgers',
-            { search, start_date: startDate, end_date: endDate },
+            { 
+                search, 
+                start_date: startDate, 
+                end_date: endDate,
+                source_type: filters.source_type
+            },
             { preserveState: true },
         );
     };
@@ -75,51 +88,76 @@ const InventoryLedgerIndex = ({
                 </div>
 
                 <Card>
-                    <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                            <CardTitle>Transactions</CardTitle>
-                            <form
-                                onSubmit={handleSearch}
-                                className="flex flex-wrap items-center gap-2"
+                    <CardHeader className="space-y-4 pb-4">
+                        <CardTitle>Transactions</CardTitle>
+                        <form
+                            onSubmit={handleSearch}
+                            className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+                        >
+                            <div className="relative w-full sm:w-auto sm:flex-1 lg:max-w-[300px]">
+                                <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="search"
+                                    placeholder="Search product..."
+                                    className="w-full pl-8"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </div>
+                            <Select
+                                value={filters.source_type || 'all'}
+                                onValueChange={(value) => {
+                                    filters.source_type =
+                                        value === 'all' ? '' : value;
+                                    handleSearch(
+                                        new Event(
+                                            'submit',
+                                        ) as unknown as React.FormEvent,
+                                    );
+                                }}
                             >
-                                <div className="relative">
-                                    <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="search"
-                                        placeholder="Search product..."
-                                        className="w-full pl-8 sm:w-64"
-                                        value={search}
-                                        onChange={(e) =>
-                                            setSearch(e.target.value)
-                                        }
-                                    />
-                                </div>
-                                <Input
-                                    type="date"
-                                    className="w-full sm:w-auto"
-                                    value={startDate}
-                                    onChange={(e) =>
-                                        setStartDate(e.target.value)
-                                    }
-                                />
-                                <span className="text-muted-foreground">
-                                    to
-                                </span>
-                                <Input
-                                    type="date"
-                                    className="w-full sm:w-auto"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                />
-                                <Button
-                                    type="submit"
-                                    variant="secondary"
-                                    size="sm"
-                                >
-                                    Search
-                                </Button>
-                            </form>
-                        </div>
+                                <SelectTrigger className="w-full sm:w-[160px]">
+                                    <SelectValue placeholder="All Sources" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">
+                                        All Sources
+                                    </SelectItem>
+                                    <SelectItem value="StockAdjustment">
+                                        Stock Adjustment
+                                    </SelectItem>
+                                    <SelectItem value="PurchaseOrder">
+                                        Purchase Order
+                                    </SelectItem>
+                                    <SelectItem value="Product">
+                                        Product Edit
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Input
+                                type="date"
+                                className="w-full sm:w-auto"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                            <span className="hidden text-muted-foreground sm:inline">
+                                to
+                            </span>
+                            <Input
+                                type="date"
+                                className="w-full sm:w-auto"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
+                            <Button
+                                type="submit"
+                                variant="secondary"
+                                size="sm"
+                                className="w-full sm:w-auto"
+                            >
+                                Search
+                            </Button>
+                        </form>
                     </CardHeader>
                     <CardContent>
                         <Table>

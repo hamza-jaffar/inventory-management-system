@@ -26,9 +26,11 @@ class PurchaseOrderController extends Controller
      */
     public function index(Request $request): Response
     {
+        $filterKeys = ['search', 'sort', 'status', 'start_date', 'end_date'];
+        
         return inertia('purchase-orders/index', [
-            'purchaseOrders' => $this->purchaseOrderService->getPaginated($request->only(['search', 'sort', 'status'])),
-            'filters' => $request->only(['search', 'sort', 'status']),
+            'purchaseOrders' => $this->purchaseOrderService->getPaginated($request->only($filterKeys)),
+            'filters' => $request->only($filterKeys),
         ]);
     }
 
