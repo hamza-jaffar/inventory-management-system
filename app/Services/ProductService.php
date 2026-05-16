@@ -10,6 +10,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
+    public function __construct(
+        protected InventoryLedgerService $inventoryLedgerService
+    ) {}
     /**
      * Get all active products.
      */
@@ -63,7 +66,18 @@ class ProductService
             $data['image_path'] = StorageHelper::upload($data['image'], 'products');
         }
 
-        return Product::create($data);
+        $product = Product::create($data);
+
+        if ($product->quantity > 0) {
+            $this->inventoryLedgerService->record(
+                $product->id,
+                0,
+                $product->quantity,
+                $product
+            );
+        }
+
+        return $product;
     }
 
     /**
@@ -81,7 +95,18 @@ class ProductService
             $data['image_path'] = StorageHelper::upload($data['image'], 'products');
         }
 
+        $quantityBefore = $product->quantity;
+
         $product->update($data);
+
+        if (isset($data['quantity']) && $data['quantity'] != $quantityBefore) {
+            $this->inventoryLedgerService->record(
+                $product->id,
+                $quantityBefore,
+                $product->quantity,
+                $product
+            );
+        }
 
         return $product;
     }

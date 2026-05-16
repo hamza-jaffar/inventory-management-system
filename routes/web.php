@@ -25,6 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('purchase-orders', App\Http\Controllers\PurchaseOrderController::class)->except(['edit', 'update', 'destroy']);
     Route::post('purchase-orders/{purchase_order}/receive', [App\Http\Controllers\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
     Route::post('purchase-orders/{purchase_order}/cancel', [App\Http\Controllers\PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+
+    Route::resource('stock-adjustments', App\Http\Controllers\StockAdjustmentController::class)->only(['index', 'create', 'store']);
+    Route::get('inventory-ledgers', [App\Http\Controllers\InventoryLedgerController::class, 'index'])->name('inventory-ledgers.index');
 });
 
 require __DIR__ . '/settings.php';

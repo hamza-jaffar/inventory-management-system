@@ -54,6 +54,16 @@ const mainNavItems: NavItem[] = [
         href: purchaseOrders.index().url,
         icon: ShoppingCart,
     },
+    {
+        title: 'Stock Adjustments',
+        href: '/stock-adjustments', // Using hardcoded path for now until wayfinder is refreshed
+        icon: Package,
+    },
+    {
+        title: 'Inventory Ledgers',
+        href: '/inventory-ledgers',
+        icon: BookOpen,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

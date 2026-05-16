@@ -62,6 +62,20 @@ class PurchaseOrderSeeder extends Seeder
                     'unit_cost' => $product->cost_price,
                 ]);
 
+                if ($qtyReceived > 0) {
+                    $quantityBefore = $product->quantity;
+                    $quantityAfter = $quantityBefore + $qtyReceived;
+                    
+                    $product->update(['quantity' => $quantityAfter]);
+                    
+                    app(\App\Services\InventoryLedgerService::class)->record(
+                        $product->id,
+                        $quantityBefore,
+                        $quantityAfter,
+                        $po
+                    );
+                }
+
                 $totalCost += ($item->quantity_ordered * $item->unit_cost);
             }
 
