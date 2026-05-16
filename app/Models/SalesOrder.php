@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'order_number',
-    'status',
     'total_amount',
 ])]
 class SalesOrder extends Model
