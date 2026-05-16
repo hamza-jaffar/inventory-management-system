@@ -49,9 +49,16 @@ class SupplierController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreSupplierRequest $request): RedirectResponse
+    public function store(StoreSupplierRequest $request)
     {
-        $this->supplierService->create($request->validated());
+        $supplier = $this->supplierService->create($request->validated());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Supplier created successfully.',
+                'supplier' => $supplier
+            ]);
+        }
 
         return redirect()->route('suppliers.index')
             ->with('success', 'Supplier created successfully.');

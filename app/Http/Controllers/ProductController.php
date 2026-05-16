@@ -46,9 +46,16 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProductRequest $request): RedirectResponse
+    public function store(StoreProductRequest $request)
     {
-        $this->productService->create($request->validated());
+        $product = $this->productService->create($request->validated());
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'product-created',
+                'product' => $product
+            ]);
+        }
 
         return redirect()->route('products.index')
             ->with('status', 'product-created');

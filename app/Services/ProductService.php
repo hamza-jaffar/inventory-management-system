@@ -11,6 +11,16 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class ProductService
 {
     /**
+     * Get all active products.
+     */
+    public function getActiveProducts()
+    {
+        return Product::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'sku', 'cost_price', 'supplier_id']);
+    }
+
+    /**
      * Get paginated products with filters.
      */
     public function getPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator

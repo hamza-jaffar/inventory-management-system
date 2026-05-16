@@ -21,6 +21,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('products', ProductController::class);
     Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
+
+    Route::resource('purchase-orders', App\Http\Controllers\PurchaseOrderController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('purchase-orders/{purchase_order}/receive', [App\Http\Controllers\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+    Route::post('purchase-orders/{purchase_order}/cancel', [App\Http\Controllers\PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
 });
 
 require __DIR__ . '/settings.php';

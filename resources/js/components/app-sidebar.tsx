@@ -1,5 +1,13 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, Layers, Truck, Package } from 'lucide-react';
+import {
+    BookOpen,
+    FolderGit2,
+    LayoutGrid,
+    Layers,
+    Truck,
+    Package,
+    ShoppingCart,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -18,6 +26,7 @@ import type { NavItem } from '@/types';
 import categories from '@/routes/categories';
 import * as suppliers from '@/routes/suppliers';
 import * as products from '@/routes/products';
+import purchaseOrders from '@/routes/purchase-orders';
 
 const mainNavItems: NavItem[] = [
     {
@@ -39,6 +48,11 @@ const mainNavItems: NavItem[] = [
         title: 'Products',
         href: products.index().url,
         icon: Package,
+    },
+    {
+        title: 'Purchase Orders',
+        href: purchaseOrders.index().url,
+        icon: ShoppingCart,
     },
 ];
 
