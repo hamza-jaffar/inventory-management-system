@@ -9,7 +9,17 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Pencil, Trash2, Search, ArrowUpDown, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
+import {
+    PlusCircle,
+    Pencil,
+    Trash2,
+    Search,
+    ArrowUpDown,
+    ChevronUp,
+    ChevronDown,
+    Check,
+    X,
+} from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -32,15 +42,7 @@ import {
 import { Input } from '@/components/ui/input';
 import * as categoriesRoutes from '@/routes/categories';
 import { debounce } from 'lodash';
-
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-    parent?: { name: string };
-    is_active: boolean;
-    sort_order: number;
-}
+import { Category } from '@/types/data';
 
 interface IndexProps {
     categories: {
@@ -58,7 +60,9 @@ interface IndexProps {
 }
 
 const CategoryIndex = ({ categories, filters }: IndexProps) => {
-    const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+    const [categoryToDelete, setCategoryToDelete] = useState<number | null>(
+        null,
+    );
     const [search, setSearch] = useState(filters.search || '');
 
     const confirmDelete = () => {
@@ -74,10 +78,10 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
             router.get(
                 categoriesRoutes.index().url,
                 { ...filters, search: value },
-                { preserveState: true, replace: true }
+                { preserveState: true, replace: true },
             );
         }, 300),
-        [filters]
+        [filters],
     );
 
     useEffect(() => {
@@ -97,19 +101,25 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
         router.get(
             categoriesRoutes.index().url,
             { ...filters, sort: newSort },
-            { preserveState: true }
+            { preserveState: true },
         );
     };
 
     const toggleStatus = (id: number) => {
-        router.patch(categoriesRoutes.toggleStatus(id).url, {}, {
-            preserveScroll: true,
-        });
+        router.patch(
+            categoriesRoutes.toggleStatus(id).url,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const getSortIcon = (field: string) => {
-        if (filters.sort === field) return <ChevronUp className="ml-2 h-4 w-4" />;
-        if (filters.sort === `-${field}`) return <ChevronDown className="ml-2 h-4 w-4" />;
+        if (filters.sort === field)
+            return <ChevronUp className="ml-2 h-4 w-4" />;
+        if (filters.sort === `-${field}`)
+            return <ChevronDown className="ml-2 h-4 w-4" />;
         return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
     };
 
@@ -124,7 +134,7 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
                 />
                 <div className="flex items-center gap-2">
                     <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search categories..."
                             className="pl-8"
@@ -145,52 +155,94 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('name')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('name')}
+                            >
                                 <div className="flex items-center">
                                     Name {getSortIcon('name')}
                                 </div>
                             </TableHead>
                             <TableHead>Slug</TableHead>
                             <TableHead>Parent</TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('is_active')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('is_active')}
+                            >
                                 <div className="flex items-center">
                                     Status {getSortIcon('is_active')}
                                 </div>
                             </TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('sort_order')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('sort_order')}
+                            >
                                 <div className="flex items-center">
                                     Sort Order {getSortIcon('sort_order')}
                                 </div>
                             </TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {categories.data.length > 0 ? (
                             categories.data.map((category) => (
                                 <TableRow key={category.id}>
-                                    <TableCell className="font-medium">{category.name}</TableCell>
+                                    <TableCell className="font-medium">
+                                        {category.name}
+                                    </TableCell>
                                     <TableCell>{category.slug}</TableCell>
-                                    <TableCell>{category.parent?.name || '-'}</TableCell>
+                                    <TableCell>
+                                        {category.parent?.name || '-'}
+                                    </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 p-0 hover:bg-transparent">
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-8 p-0 hover:bg-transparent"
+                                                >
                                                     <Badge
-                                                        variant={category.is_active ? 'default' : 'secondary'}
+                                                        variant={
+                                                            category.is_active
+                                                                ? 'default'
+                                                                : 'secondary'
+                                                        }
                                                         className="cursor-pointer"
                                                     >
-                                                        {category.is_active ? 'Active' : 'Inactive'}
+                                                        {category.is_active
+                                                            ? 'Active'
+                                                            : 'Inactive'}
                                                     </Badge>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start">
-                                                <DropdownMenuItem onClick={() => !category.is_active && toggleStatus(category.id)}>
-                                                    <Check className={`mr-2 h-4 w-4 ${category.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        !category.is_active &&
+                                                        toggleStatus(
+                                                            category.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Check
+                                                        className={`mr-2 h-4 w-4 ${category.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                    />
                                                     Active
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => category.is_active && toggleStatus(category.id)}>
-                                                    <X className={`mr-2 h-4 w-4 ${!category.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        category.is_active &&
+                                                        toggleStatus(
+                                                            category.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <X
+                                                        className={`mr-2 h-4 w-4 ${!category.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                    />
                                                     Inactive
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -199,15 +251,29 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
                                     <TableCell>{category.sort_order}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={categoriesRoutes.edit(category.id).url}>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                            >
+                                                <Link
+                                                    href={
+                                                        categoriesRoutes.edit(
+                                                            category.id,
+                                                        ).url
+                                                    }
+                                                >
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => setCategoryToDelete(category.id)}
+                                                onClick={() =>
+                                                    setCategoryToDelete(
+                                                        category.id,
+                                                    )
+                                                }
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -217,7 +283,10 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell
+                                    colSpan={6}
+                                    className="h-24 text-center"
+                                >
                                     No categories found.
                                 </TableCell>
                             </TableRow>
@@ -236,12 +305,25 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
                             size="sm"
                             asChild={!!link.url}
                             disabled={!link.url}
-                            className={link.active ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}
+                            className={
+                                link.active
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : ''
+                            }
                         >
                             {link.url ? (
-                                <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <Link
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             ) : (
-                                <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             )}
                         </Button>
                     ))}
@@ -254,10 +336,12 @@ const CategoryIndex = ({ categories, filters }: IndexProps) => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Are you absolutely sure?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the category
-                            and remove it from our servers.
+                            This action cannot be undone. This will permanently
+                            delete the category and remove it from our servers.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

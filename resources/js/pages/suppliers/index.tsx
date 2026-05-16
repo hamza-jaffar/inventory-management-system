@@ -9,7 +9,19 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Pencil, Trash2, Mail, Phone, Search, ArrowUpDown, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
+import {
+    PlusCircle,
+    Pencil,
+    Trash2,
+    Mail,
+    Phone,
+    Search,
+    ArrowUpDown,
+    ChevronUp,
+    ChevronDown,
+    Check,
+    X,
+} from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -32,17 +44,7 @@ import {
 import { Input } from '@/components/ui/input';
 import * as suppliersRoutes from '@/routes/suppliers';
 import { debounce } from 'lodash';
-
-interface Supplier {
-    id: number;
-    name: string;
-    code: string;
-    contact_name: string | null;
-    email: string | null;
-    phone: string | null;
-    website: string | null;
-    is_active: boolean;
-}
+import { Supplier } from '@/types/data';
 
 interface IndexProps {
     suppliers: {
@@ -60,7 +62,9 @@ interface IndexProps {
 }
 
 const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
-    const [supplierToDelete, setSupplierToDelete] = useState<number | null>(null);
+    const [supplierToDelete, setSupplierToDelete] = useState<number | null>(
+        null,
+    );
     const [search, setSearch] = useState(filters.search || '');
 
     const confirmDelete = () => {
@@ -76,10 +80,10 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
             router.get(
                 suppliersRoutes.index().url,
                 { ...filters, search: value },
-                { preserveState: true, replace: true }
+                { preserveState: true, replace: true },
             );
         }, 300),
-        [filters]
+        [filters],
     );
 
     useEffect(() => {
@@ -99,19 +103,25 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
         router.get(
             suppliersRoutes.index().url,
             { ...filters, sort: newSort },
-            { preserveState: true }
+            { preserveState: true },
         );
     };
 
     const toggleStatus = (id: number) => {
-        router.patch(suppliersRoutes.toggleStatus(id).url, {}, {
-            preserveScroll: true,
-        });
+        router.patch(
+            suppliersRoutes.toggleStatus(id).url,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const getSortIcon = (field: string) => {
-        if (filters.sort === field) return <ChevronUp className="ml-2 h-4 w-4" />;
-        if (filters.sort === `-${field}`) return <ChevronDown className="ml-2 h-4 w-4" />;
+        if (filters.sort === field)
+            return <ChevronUp className="ml-2 h-4 w-4" />;
+        if (filters.sort === `-${field}`)
+            return <ChevronDown className="ml-2 h-4 w-4" />;
         return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
     };
 
@@ -126,7 +136,7 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                 />
                 <div className="flex items-center gap-2">
                     <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Search suppliers..."
                             className="pl-8"
@@ -147,23 +157,34 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('name')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('name')}
+                            >
                                 <div className="flex items-center">
                                     Supplier {getSortIcon('name')}
                                 </div>
                             </TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('contact_name')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('contact_name')}
+                            >
                                 <div className="flex items-center">
                                     Contact {getSortIcon('contact_name')}
                                 </div>
                             </TableHead>
                             <TableHead>Communication</TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('is_active')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('is_active')}
+                            >
                                 <div className="flex items-center">
                                     Status {getSortIcon('is_active')}
                                 </div>
                             </TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -172,11 +193,17 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                                 <TableRow key={supplier.id}>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{supplier.name}</span>
-                                            <span className="text-xs text-muted-foreground">{supplier.code}</span>
+                                            <span className="font-medium">
+                                                {supplier.name}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {supplier.code}
+                                            </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{supplier.contact_name || '-'}</TableCell>
+                                    <TableCell>
+                                        {supplier.contact_name || '-'}
+                                    </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
                                             {supplier.email && (
@@ -196,22 +223,49 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 p-0 hover:bg-transparent">
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-8 p-0 hover:bg-transparent"
+                                                >
                                                     <Badge
-                                                        variant={supplier.is_active ? 'default' : 'secondary'}
+                                                        variant={
+                                                            supplier.is_active
+                                                                ? 'default'
+                                                                : 'secondary'
+                                                        }
                                                         className="cursor-pointer"
                                                     >
-                                                        {supplier.is_active ? 'Active' : 'Inactive'}
+                                                        {supplier.is_active
+                                                            ? 'Active'
+                                                            : 'Inactive'}
                                                     </Badge>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start">
-                                                <DropdownMenuItem onClick={() => !supplier.is_active && toggleStatus(supplier.id)}>
-                                                    <Check className={`mr-2 h-4 w-4 ${supplier.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        !supplier.is_active &&
+                                                        toggleStatus(
+                                                            supplier.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Check
+                                                        className={`mr-2 h-4 w-4 ${supplier.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                    />
                                                     Active
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => supplier.is_active && toggleStatus(supplier.id)}>
-                                                    <X className={`mr-2 h-4 w-4 ${!supplier.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        supplier.is_active &&
+                                                        toggleStatus(
+                                                            supplier.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <X
+                                                        className={`mr-2 h-4 w-4 ${!supplier.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                    />
                                                     Inactive
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -219,15 +273,29 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={suppliersRoutes.edit(supplier.id).url}>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                            >
+                                                <Link
+                                                    href={
+                                                        suppliersRoutes.edit(
+                                                            supplier.id,
+                                                        ).url
+                                                    }
+                                                >
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => setSupplierToDelete(supplier.id)}
+                                                onClick={() =>
+                                                    setSupplierToDelete(
+                                                        supplier.id,
+                                                    )
+                                                }
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -237,7 +305,10 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell
+                                    colSpan={5}
+                                    className="h-24 text-center"
+                                >
                                     No suppliers found.
                                 </TableCell>
                             </TableRow>
@@ -256,12 +327,25 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
                             size="sm"
                             asChild={!!link.url}
                             disabled={!link.url}
-                            className={link.active ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}
+                            className={
+                                link.active
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : ''
+                            }
                         >
                             {link.url ? (
-                                <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <Link
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             ) : (
-                                <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             )}
                         </Button>
                     ))}
@@ -274,10 +358,13 @@ const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Are you absolutely sure?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the supplier
-                            and all associated record history.
+                            This action cannot be undone. This will permanently
+                            delete the supplier and all associated record
+                            history.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

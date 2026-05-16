@@ -17,7 +17,8 @@ interface SettingsProps {
 export default function SettingPage({
     settings: initialSettings,
 }: SettingsProps) {
-    const { app_logo_url: currentLogoUrl, company_name } = useSettings();
+    const { app_logo_url: currentLogoUrl, app_name: companyName } =
+        useSettings();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(
         currentLogoUrl,
@@ -91,7 +92,7 @@ export default function SettingPage({
                                         <>
                                             <img
                                                 src={logoPreview}
-                                                alt={company_name}
+                                                alt={companyName}
                                                 className="h-full w-full object-contain p-1"
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100">

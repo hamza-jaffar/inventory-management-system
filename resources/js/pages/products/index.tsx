@@ -45,21 +45,7 @@ import { SearchableSelect } from '@/components/searchable-select';
 import * as productsRoutes from '@/routes/products';
 import { useSettings } from '@/hooks/use-settings';
 import { debounce } from 'lodash';
-
-interface Product {
-    id: number;
-    name: string;
-    sku: string;
-    barcode: string | null;
-    slug: string;
-    quantity: number;
-    safety_stock: number;
-    sale_price: string;
-    image_url: string | null;
-    is_active: boolean;
-    category?: { name: string };
-    supplier?: { name: string };
-}
+import { Product } from '@/types/data';
 
 interface IndexProps {
     products: {
@@ -79,7 +65,7 @@ interface IndexProps {
 }
 
 const ProductIndex = ({ products, filters, categories }: IndexProps) => {
-    const { currency_symbol } = useSettings();
+    const { app_currency_symbol } = useSettings();
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
     const [search, setSearch] = useState(filters.search || '');
 
@@ -280,7 +266,10 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {currency_symbol} {product.sale_price}
+                                        {app_currency_symbol}{' '}
+                                        {product.sale_price > 0
+                                            ? product.sale_price
+                                            : product.retail_price}
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>

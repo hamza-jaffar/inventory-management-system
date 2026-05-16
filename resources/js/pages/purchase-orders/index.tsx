@@ -23,19 +23,7 @@ import { router } from '@inertiajs/react';
 import { useSettings } from '@/hooks/use-settings';
 import { format } from 'date-fns';
 import * as purchaseOrder from '@/routes/purchase-orders';
-
-interface PurchaseOrder {
-    id: number;
-    po_number: string;
-    supplier: {
-        id: number;
-        name: string;
-    };
-    status: string;
-    total_cost: string;
-    ordered_at: string;
-    received_at: string | null;
-}
+import { PurchaseOrder } from '@/types/data';
 
 interface IndexProps {
     purchaseOrders: {
