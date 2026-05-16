@@ -6,10 +6,20 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(
-    "key",
-    "value"
+    'key',
+    'value'
 )]
 class Setting extends Model
 {
-    //
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'value' => 'json',
+        ];
+    }
 }

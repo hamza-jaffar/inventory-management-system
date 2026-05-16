@@ -9,8 +9,14 @@ import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
+import settings from '@/routes/settings';
 
 const sidebarNavItems: NavItem[] = [
+    {
+        title: 'Settings',
+        href: settings.index(),
+        icon: null,
+    },
     {
         title: 'Profile',
         href: edit(),
