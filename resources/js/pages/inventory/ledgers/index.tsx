@@ -23,7 +23,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import AppLayout from '@/layouts/app-layout';
@@ -48,27 +48,54 @@ const InventoryLedgerIndex = ({
     filters,
 }: InventoryLedgerIndexProps) => {
     const [search, setSearch] = useState(filters.search || '');
+    const [sourceType, setSourceType] = useState(filters.source_type || 'all');
     const [startDate, setStartDate] = useState(filters.start_date || '');
     const [endDate, setEndDate] = useState(filters.end_date || '');
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
+    // Sync state with props when they change (e.g., back/forward navigation)
+    useEffect(() => {
+        setSearch(filters.search || '');
+        setSourceType(filters.source_type || 'all');
+        setStartDate(filters.start_date || '');
+        setEndDate(filters.end_date || '');
+    }, [filters]);
+
+    const handleSearch = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        applyFilters({ search, source_type: sourceType, start_date: startDate, end_date: endDate });
+    };
+
+    const applyFilters = (currentFilters: any) => {
         router.get(
             '/inventory-ledgers',
-            { 
-                search, 
-                start_date: startDate, 
-                end_date: endDate,
-                source_type: filters.source_type
+            {
+                search: currentFilters.search,
+                source_type: currentFilters.source_type === 'all' ? '' : currentFilters.source_type,
+                start_date: currentFilters.start_date,
+                end_date: currentFilters.end_date,
             },
             { preserveState: true },
         );
+    };
+
+    const handleSourceChange = (value: string) => {
+        setSourceType(value);
+        applyFilters({ search, source_type: value, start_date: startDate, end_date: endDate });
+    };
+
+    const handleReset = () => {
+        setSearch('');
+        setSourceType('all');
+        setStartDate('');
+        setEndDate('');
+        router.get('/inventory-ledgers', {}, { preserveState: false });
     };
 
     const getSourceTypeFriendly = (type: string) => {
         if (!type) return '-';
         if (type.includes('StockAdjustment')) return 'Stock Adjustment';
         if (type.includes('PurchaseOrder')) return 'Purchase Order';
+        if (type.includes('SalesOrder')) return 'Sale Order';
         if (type.includes('Product')) return 'Product Edit';
         return type.split('\\').pop() || type;
     };
@@ -105,16 +132,8 @@ const InventoryLedgerIndex = ({
                                 />
                             </div>
                             <Select
-                                value={filters.source_type || 'all'}
-                                onValueChange={(value) => {
-                                    filters.source_type =
-                                        value === 'all' ? '' : value;
-                                    handleSearch(
-                                        new Event(
-                                            'submit',
-                                        ) as unknown as React.FormEvent,
-                                    );
-                                }}
+                                value={sourceType}
+                                onValueChange={handleSourceChange}
                             >
                                 <SelectTrigger className="w-full sm:w-[160px]">
                                     <SelectValue placeholder="All Sources" />
@@ -129,6 +148,9 @@ const InventoryLedgerIndex = ({
                                     <SelectItem value="PurchaseOrder">
                                         Purchase Order
                                     </SelectItem>
+                                    <SelectItem value="SalesOrder">
+                                        Sale Order
+                                    </SelectItem>
                                     <SelectItem value="Product">
                                         Product Edit
                                     </SelectItem>
@@ -139,6 +161,7 @@ const InventoryLedgerIndex = ({
                                 className="w-full sm:w-auto"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
+                                onBlur={() => applyFilters({ search, source_type: sourceType, start_date: startDate, end_date: endDate })}
                             />
                             <span className="hidden text-muted-foreground sm:inline">
                                 to
@@ -148,15 +171,27 @@ const InventoryLedgerIndex = ({
                                 className="w-full sm:w-auto"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
+                                onBlur={() => applyFilters({ search, source_type: sourceType, start_date: startDate, end_date: endDate })}
                             />
-                            <Button
-                                type="submit"
-                                variant="secondary"
-                                size="sm"
-                                className="w-full sm:w-auto"
-                            >
-                                Search
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="submit"
+                                    variant="secondary"
+                                    size="sm"
+                                    className="w-full sm:w-auto"
+                                >
+                                    Search
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleReset}
+                                    className="w-full sm:w-auto"
+                                >
+                                    Reset
+                                </Button>
+                            </div>
                         </form>
                     </CardHeader>
                     <CardContent>
