@@ -7,6 +7,7 @@ import {
     Truck,
     Package,
     ShoppingCart,
+    Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -28,58 +29,55 @@ import * as suppliers from '@/routes/suppliers';
 import * as products from '@/routes/products';
 import purchaseOrders from '@/routes/purchase-orders';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Categories',
-        href: categories.index(),
-        icon: Layers,
-    },
-    {
-        title: 'Suppliers',
-        href: suppliers.index().url,
-        icon: Truck,
-    },
-    {
-        title: 'Products',
-        href: products.index().url,
-        icon: Package,
-    },
-    {
-        title: 'Purchase Orders',
-        href: purchaseOrders.index().url,
-        icon: ShoppingCart,
-    },
-    {
-        title: 'Stock Adjustments',
-        href: '/stock-adjustments', // Using hardcoded path for now until wayfinder is refreshed
-        icon: Package,
-    },
-    {
-        title: 'Inventory Ledgers',
-        href: '/inventory-ledgers',
-        icon: BookOpen,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+import { usePermissions } from '@/hooks/use-permissions';
 
 export function AppSidebar() {
+    const { can } = usePermissions();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+            // Everyone can view dashboard
+        },
+        ...(can('view categories') ? [{
+            title: 'Categories',
+            href: categories.index(),
+            icon: Layers,
+        }] : []),
+        ...(can('view suppliers') ? [{
+            title: 'Suppliers',
+            href: suppliers.index().url,
+            icon: Truck,
+        }] : []),
+        ...(can('view products') ? [{
+            title: 'Products',
+            href: products.index().url,
+            icon: Package,
+        }] : []),
+        ...(can('view purchases') ? [{
+            title: 'Purchase Orders',
+            href: purchaseOrders.index().url,
+            icon: ShoppingCart,
+        }] : []),
+        ...(can('view adjustments') ? [{
+            title: 'Stock Adjustments',
+            href: '/stock-adjustments',
+            icon: Package,
+        }] : []),
+        ...(can('view ledgers') ? [{
+            title: 'Inventory Ledgers',
+            href: '/inventory-ledgers',
+            icon: BookOpen,
+        }] : []),
+        ...(can('manage users') ? [{
+            title: 'User Management',
+            href: '/users',
+            icon: Users,
+        }] : []),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
