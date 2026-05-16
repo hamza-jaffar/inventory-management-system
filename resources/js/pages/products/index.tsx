@@ -9,7 +9,18 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Pencil, Trash2, Search, ArrowUpDown, ChevronUp, ChevronDown, Check, X, Package } from 'lucide-react';
+import {
+    PlusCircle,
+    Pencil,
+    Trash2,
+    Search,
+    ArrowUpDown,
+    ChevronUp,
+    ChevronDown,
+    Check,
+    X,
+    Package,
+} from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -32,6 +43,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { SearchableSelect } from '@/components/searchable-select';
 import * as productsRoutes from '@/routes/products';
+import { useSettings } from '@/hooks/use-settings';
 import { debounce } from 'lodash';
 
 interface Product {
@@ -63,10 +75,11 @@ interface IndexProps {
         sort?: string;
         category_id?: string;
     };
-    categories: { id: number, name: string }[];
+    categories: { id: number; name: string }[];
 }
 
 const ProductIndex = ({ products, filters, categories }: IndexProps) => {
+    const { currency_symbol } = useSettings();
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
     const [search, setSearch] = useState(filters.search || '');
 
@@ -83,10 +96,10 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
             router.get(
                 productsRoutes.index().url,
                 { ...filters, ...newFilters },
-                { preserveState: true, replace: true }
+                { preserveState: true, replace: true },
             );
         }, 300),
-        [filters]
+        [filters],
     );
 
     useEffect(() => {
@@ -106,14 +119,20 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
     };
 
     const toggleStatus = (id: number) => {
-        router.patch(productsRoutes.toggleStatus(id).url, {}, {
-            preserveScroll: true,
-        });
+        router.patch(
+            productsRoutes.toggleStatus(id).url,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const getSortIcon = (field: string) => {
-        if (filters.sort === field) return <ChevronUp className="ml-2 h-4 w-4" />;
-        if (filters.sort === `-${field}`) return <ChevronDown className="ml-2 h-4 w-4" />;
+        if (filters.sort === field)
+            return <ChevronUp className="ml-2 h-4 w-4" />;
+        if (filters.sort === `-${field}`)
+            return <ChevronDown className="ml-2 h-4 w-4" />;
         return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
     };
 
@@ -136,7 +155,7 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search products..."
                         className="pl-8"
@@ -153,7 +172,11 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                         })),
                     ]}
                     value={filters.category_id || 'all'}
-                    onValueChange={(value) => handleFilter({ category_id: value === 'all' ? '' : value })}
+                    onValueChange={(value) =>
+                        handleFilter({
+                            category_id: value === 'all' ? '' : value,
+                        })
+                    }
                     placeholder="All Categories"
                     searchPlaceholder="Search categories..."
                     className="w-full sm:w-[220px]"
@@ -165,28 +188,42 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-[80px]">Image</TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('name')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('name')}
+                            >
                                 <div className="flex items-center">
                                     Product {getSortIcon('name')}
                                 </div>
                             </TableHead>
                             <TableHead>Category</TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('quantity')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('quantity')}
+                            >
                                 <div className="flex items-center">
                                     Stock {getSortIcon('quantity')}
                                 </div>
                             </TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('sale_price')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('sale_price')}
+                            >
                                 <div className="flex items-center">
                                     Price {getSortIcon('sale_price')}
                                 </div>
                             </TableHead>
-                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('is_active')}>
+                            <TableHead
+                                className="cursor-pointer hover:bg-muted/50"
+                                onClick={() => toggleSort('is_active')}
+                            >
                                 <div className="flex items-center">
                                     Status {getSortIcon('is_active')}
                                 </div>
                             </TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-right">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -198,7 +235,7 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                             <img
                                                 src={product.image_url}
                                                 alt={product.name}
-                                                className="h-10 w-10 rounded-md object-cover border"
+                                                className="h-10 w-10 rounded-md border object-cover"
                                             />
                                         ) : (
                                             <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted">
@@ -208,41 +245,85 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{product.name}</span>
-                                            <span className="text-xs text-muted-foreground">{product.sku}</span>
+                                            <span className="font-medium">
+                                                {product.name}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {product.sku}
+                                            </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{product.category?.name || '-'}</TableCell>
+                                    <TableCell>
+                                        {product.category?.name || '-'}
+                                    </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
-                                            <span className={product.quantity <= product.safety_stock ? 'text-destructive font-bold' : ''}>
+                                            <span
+                                                className={
+                                                    product.quantity <=
+                                                    product.safety_stock
+                                                        ? 'font-bold text-destructive'
+                                                        : ''
+                                                }
+                                            >
                                                 {product.quantity}
                                             </span>
-                                            {product.quantity <= product.safety_stock && (
-                                                <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">Low</Badge>
+                                            {product.quantity <=
+                                                product.safety_stock && (
+                                                <Badge
+                                                    variant="destructive"
+                                                    className="h-5 px-1.5 text-[10px]"
+                                                >
+                                                    Low
+                                                </Badge>
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell>${product.sale_price}</TableCell>
+                                    <TableCell>
+                                        {currency_symbol} {product.sale_price}
+                                    </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 p-0 hover:bg-transparent">
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-8 p-0 hover:bg-transparent"
+                                                >
                                                     <Badge
-                                                        variant={product.is_active ? 'default' : 'secondary'}
+                                                        variant={
+                                                            product.is_active
+                                                                ? 'default'
+                                                                : 'secondary'
+                                                        }
                                                         className="cursor-pointer"
                                                     >
-                                                        {product.is_active ? 'Active' : 'Inactive'}
+                                                        {product.is_active
+                                                            ? 'Active'
+                                                            : 'Inactive'}
                                                     </Badge>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start">
-                                                <DropdownMenuItem onClick={() => !product.is_active && toggleStatus(product.id)}>
-                                                    <Check className={`mr-2 h-4 w-4 ${product.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        !product.is_active &&
+                                                        toggleStatus(product.id)
+                                                    }
+                                                >
+                                                    <Check
+                                                        className={`mr-2 h-4 w-4 ${product.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                    />
                                                     Active
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => product.is_active && toggleStatus(product.id)}>
-                                                    <X className={`mr-2 h-4 w-4 ${!product.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        product.is_active &&
+                                                        toggleStatus(product.id)
+                                                    }
+                                                >
+                                                    <X
+                                                        className={`mr-2 h-4 w-4 ${!product.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                    />
                                                     Inactive
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -250,15 +331,29 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={productsRoutes.edit(product.id).url}>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                asChild
+                                            >
+                                                <Link
+                                                    href={
+                                                        productsRoutes.edit(
+                                                            product.id,
+                                                        ).url
+                                                    }
+                                                >
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => setProductToDelete(product.id)}
+                                                onClick={() =>
+                                                    setProductToDelete(
+                                                        product.id,
+                                                    )
+                                                }
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -268,7 +363,10 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
+                                <TableCell
+                                    colSpan={7}
+                                    className="h-24 text-center"
+                                >
                                     No products found.
                                 </TableCell>
                             </TableRow>
@@ -287,12 +385,25 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                             size="sm"
                             asChild={!!link.url}
                             disabled={!link.url}
-                            className={link.active ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}
+                            className={
+                                link.active
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : ''
+                            }
                         >
                             {link.url ? (
-                                <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <Link
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             ) : (
-                                <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             )}
                         </Button>
                     ))}
@@ -305,10 +416,13 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Are you absolutely sure?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the product
-                            and all associated inventory history.
+                            This action cannot be undone. This will permanently
+                            delete the product and all associated inventory
+                            history.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

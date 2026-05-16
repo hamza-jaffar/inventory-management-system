@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,13 +36,27 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $settings = SettingService::allSettings();
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $settings->get('app_name', config('app.name')),
             'auth' => [
                 'user' => $request->user(),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'settings' => [
+                'app_name' => $settings->get('app_name', config('app.name')),
+                'app_logo_url' => $settings->get('app_logo_url'),
+                'app_currency_symbol' => $settings->get('app_currency_symbol', '$'),
+                'app_currency' => $settings->get('app_currency', 'USD'),
+                'app_address' => $settings->get('app_address'),
+                'app_city' => $settings->get('app_city'),
+                'app_state' => $settings->get('app_state'),
+                'app_country' => $settings->get('app_country'),
+                'app_phone' => $settings->get('app_phone'),
+                'app_email' => $settings->get('app_email'),
+            ],
         ];
     }
 }

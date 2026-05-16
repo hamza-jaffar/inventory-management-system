@@ -1,6 +1,19 @@
+import { useSettings } from '@/hooks/use-settings';
 import type { SVGAttributes } from 'react';
 
 export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
+    const { app_name, app_logo_url } = useSettings();
+
+    if (app_logo_url) {
+        return (
+            <img
+                src={app_logo_url}
+                alt={app_name}
+                {...(props as React.ImgHTMLAttributes<HTMLImageElement>)}
+            />
+        );
+    }
+
     return (
         <svg {...props} viewBox="0 0 40 42" xmlns="http://www.w3.org/2000/svg">
             <path

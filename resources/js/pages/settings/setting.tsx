@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import SettingController from '@/actions/App/Http/Controllers/Settings/SettingController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import settings from '@/routes/settings';
+import { useSettings } from '@/hooks/use-settings';
+import React, { useRef, useState } from 'react';
+import { ImagePlus, Trash2, Loader2 } from 'lucide-react';
 
 interface SettingsProps {
     settings: Record<string, string>;
@@ -14,10 +17,50 @@ interface SettingsProps {
 export default function SettingPage({
     settings: initialSettings,
 }: SettingsProps) {
+    const { app_logo_url: currentLogoUrl, company_name } = useSettings();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(
+        currentLogoUrl,
+    );
+
+    const { data, setData, post, processing, errors } = useForm({
+        _method: 'PATCH',
+        app_name: initialSettings.app_name || '',
+        app_email: initialSettings.app_email || '',
+        app_phone: initialSettings.app_phone || '',
+        app_currency: initialSettings.app_currency || '',
+        app_currency_symbol: initialSettings.app_currency_symbol || '',
+        app_address: initialSettings.app_address || '',
+        app_city: initialSettings.app_city || '',
+        app_state: initialSettings.app_state || '',
+        app_country: initialSettings.app_country || '',
+        app_logo_url: null as File | null,
+    });
+
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('app_logo_url', file);
+            const reader = new FileReader();
+            reader.onloadend = () => setLogoPreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeLogo = () => {
+        setData('app_logo_url', null);
+        setLogoPreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(SettingController.update.url());
+    };
+
     return (
         <>
             <Head title="Business settings" />
-
             <h1 className="sr-only">Business settings</h1>
 
             <div className="space-y-6">
@@ -27,216 +70,265 @@ export default function SettingPage({
                     description="Update your business details and regional preferences"
                 />
 
-                <Form
-                    {...SettingController.update.form()}
-                    options={{
-                        preserveScroll: true,
-                    }}
-                    className="space-y-6"
-                >
-                    {({ processing, errors }) => (
-                        <div className="grid gap-6">
-                            {/* Business Info Section */}
-                            <div className="grid gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="app_name">
-                                        Business Name
-                                    </Label>
-                                    <Input
-                                        id="app_name"
-                                        name="app_name"
-                                        defaultValue={initialSettings.app_name}
-                                        placeholder="e.g. Acme Corp"
-                                    />
-                                    <InputError message={errors.app_name} />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid gap-6">
+                        {/* Logo Upload Section */}
+                        <div className="grid gap-4 rounded-lg border p-4">
+                            <Heading
+                                variant="small"
+                                title="Company Logo"
+                                description="Displayed in the sidebar and on documents"
+                            />
+                            <div className="flex items-start gap-6">
+                                {/* Preview */}
+                                <div
+                                    className="relative flex h-24 w-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed bg-muted/50 transition-colors hover:bg-muted/80"
+                                    onClick={() =>
+                                        fileInputRef.current?.click()
+                                    }
+                                >
+                                    {logoPreview ? (
+                                        <>
+                                            <img
+                                                src={logoPreview}
+                                                alt={company_name}
+                                                className="h-full w-full object-contain p-1"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                                                <p className="text-xs font-medium text-white">
+                                                    Change
+                                                </p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-1 text-center">
+                                            <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Upload logo
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_email">
-                                            Business Email
-                                        </Label>
-                                        <Input
-                                            id="app_email"
-                                            name="app_email"
-                                            type="email"
-                                            defaultValue={
-                                                initialSettings.app_email
+                                {/* Instructions & Actions */}
+                                <div className="flex flex-col gap-2 pt-1">
+                                    <p className="text-sm text-muted-foreground">
+                                        PNG, JPG, WEBP or SVG. Max 2MB.
+                                        Recommended size: 200×200px.
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                fileInputRef.current?.click()
                                             }
-                                            placeholder="contact@business.com"
-                                        />
-                                        <InputError
-                                            message={errors.app_email}
-                                        />
+                                        >
+                                            <ImagePlus className="mr-2 h-4 w-4" />
+                                            {logoPreview
+                                                ? 'Change Logo'
+                                                : 'Upload Logo'}
+                                        </Button>
+                                        {logoPreview && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-destructive hover:text-destructive"
+                                                onClick={removeLogo}
+                                            >
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Remove
+                                            </Button>
+                                        )}
                                     </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_phone">
-                                            Business Phone
-                                        </Label>
-                                        <Input
-                                            id="app_phone"
-                                            name="app_phone"
-                                            defaultValue={
-                                                initialSettings.app_phone
-                                            }
-                                            placeholder="+1 234 567 890"
-                                        />
+                                    {errors.app_logo_url && (
                                         <InputError
-                                            message={errors.app_phone}
+                                            message={errors.app_logo_url}
                                         />
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
 
-                            {/* Regional Settings Section */}
-                            <div className="grid gap-4 border-t pt-4">
-                                <Heading
-                                    variant="small"
-                                    title="Regional settings"
-                                    description="Configure currency and localization"
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleLogoChange}
                                 />
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_currency">
-                                            Currency Code
-                                        </Label>
-                                        <Input
-                                            id="app_currency"
-                                            name="app_currency"
-                                            defaultValue={
-                                                initialSettings.app_currency
-                                            }
-                                            placeholder="USD"
-                                        />
-                                        <InputError
-                                            message={errors.app_currency}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_currency_symbol">
-                                            Currency Symbol
-                                        </Label>
-                                        <Input
-                                            id="app_currency_symbol"
-                                            name="app_currency_symbol"
-                                            defaultValue={
-                                                initialSettings.app_currency_symbol
-                                            }
-                                            placeholder="$"
-                                        />
-                                        <InputError
-                                            message={errors.app_currency_symbol}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_timezone">
-                                            Timezone
-                                        </Label>
-                                        <Input
-                                            id="app_timezone"
-                                            name="app_timezone"
-                                            defaultValue={
-                                                initialSettings.app_timezone
-                                            }
-                                            placeholder="UTC"
-                                        />
-                                        <InputError
-                                            message={errors.app_timezone}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_language">
-                                            Default Language
-                                        </Label>
-                                        <Input
-                                            id="app_language"
-                                            name="app_language"
-                                            defaultValue={
-                                                initialSettings.app_language
-                                            }
-                                            placeholder="English"
-                                        />
-                                        <InputError
-                                            message={errors.app_language}
-                                        />
-                                    </div>
-                                </div> */}
-                            </div>
-
-                            {/* Address Section */}
-                            <div className="grid gap-4 border-t pt-4">
-                                <Heading
-                                    variant="small"
-                                    title="Location & Address"
-                                    description="Physical address details"
-                                />
-                                <div className="grid gap-2">
-                                    <Label htmlFor="app_address">Address</Label>
-                                    <Input
-                                        id="app_address"
-                                        name="app_address"
-                                        defaultValue={
-                                            initialSettings.app_address
-                                        }
-                                        placeholder="123 Street Name"
-                                    />
-                                    <InputError message={errors.app_address} />
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_city">City</Label>
-                                        <Input
-                                            id="app_city"
-                                            name="app_city"
-                                            defaultValue={
-                                                initialSettings.app_city
-                                            }
-                                        />
-                                        <InputError message={errors.app_city} />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_state">State</Label>
-                                        <Input
-                                            id="app_state"
-                                            name="app_state"
-                                            defaultValue={
-                                                initialSettings.app_state
-                                            }
-                                        />
-                                        <InputError
-                                            message={errors.app_state}
-                                        />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="app_country">
-                                            Country
-                                        </Label>
-                                        <Input
-                                            id="app_country"
-                                            name="app_country"
-                                            defaultValue={
-                                                initialSettings.app_country
-                                            }
-                                        />
-                                        <InputError
-                                            message={errors.app_country}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 border-t pt-4">
-                                <Button disabled={processing}>
-                                    Save Business Settings
-                                </Button>
                             </div>
                         </div>
-                    )}
-                </Form>
+
+                        {/* Business Info Section */}
+                        <div className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="app_name">Business Name</Label>
+                                <Input
+                                    id="app_name"
+                                    value={data.app_name}
+                                    onChange={(e) =>
+                                        setData('app_name', e.target.value)
+                                    }
+                                    placeholder="e.g. Acme Corp"
+                                />
+                                <InputError message={errors.app_name} />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_email">
+                                        Business Email
+                                    </Label>
+                                    <Input
+                                        id="app_email"
+                                        type="email"
+                                        value={data.app_email}
+                                        onChange={(e) =>
+                                            setData('app_email', e.target.value)
+                                        }
+                                        placeholder="contact@business.com"
+                                    />
+                                    <InputError message={errors.app_email} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_phone">
+                                        Business Phone
+                                    </Label>
+                                    <Input
+                                        id="app_phone"
+                                        value={data.app_phone}
+                                        onChange={(e) =>
+                                            setData('app_phone', e.target.value)
+                                        }
+                                        placeholder="+1 234 567 890"
+                                    />
+                                    <InputError message={errors.app_phone} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Regional Settings Section */}
+                        <div className="grid gap-4 border-t pt-4">
+                            <Heading
+                                variant="small"
+                                title="Regional settings"
+                                description="Configure currency and localization"
+                            />
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_currency">
+                                        Currency Code
+                                    </Label>
+                                    <Input
+                                        id="app_currency"
+                                        value={data.app_currency}
+                                        onChange={(e) =>
+                                            setData(
+                                                'app_currency',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="USD"
+                                    />
+                                    <InputError message={errors.app_currency} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_currency_symbol">
+                                        Currency Symbol
+                                    </Label>
+                                    <Input
+                                        id="app_currency_symbol"
+                                        value={data.app_currency_symbol}
+                                        onChange={(e) =>
+                                            setData(
+                                                'app_currency_symbol',
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="$"
+                                    />
+                                    <InputError
+                                        message={errors.app_currency_symbol}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Address Section */}
+                        <div className="grid gap-4 border-t pt-4">
+                            <Heading
+                                variant="small"
+                                title="Location & Address"
+                                description="Physical address details"
+                            />
+                            <div className="grid gap-2">
+                                <Label htmlFor="app_address">Address</Label>
+                                <Input
+                                    id="app_address"
+                                    value={data.app_address}
+                                    onChange={(e) =>
+                                        setData('app_address', e.target.value)
+                                    }
+                                    placeholder="123 Street Name"
+                                />
+                                <InputError message={errors.app_address} />
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_city">City</Label>
+                                    <Input
+                                        id="app_city"
+                                        value={data.app_city}
+                                        onChange={(e) =>
+                                            setData('app_city', e.target.value)
+                                        }
+                                    />
+                                    <InputError message={errors.app_city} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_state">State</Label>
+                                    <Input
+                                        id="app_state"
+                                        value={data.app_state}
+                                        onChange={(e) =>
+                                            setData('app_state', e.target.value)
+                                        }
+                                    />
+                                    <InputError message={errors.app_state} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="app_country">Country</Label>
+                                    <Input
+                                        id="app_country"
+                                        value={data.app_country}
+                                        onChange={(e) =>
+                                            setData(
+                                                'app_country',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <InputError message={errors.app_country} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 border-t pt-4">
+                            <Button disabled={processing}>
+                                {processing ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
+                                        Saving...
+                                    </>
+                                ) : (
+                                    'Save Business Settings'
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </>
     );

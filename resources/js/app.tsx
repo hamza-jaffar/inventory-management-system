@@ -9,7 +9,10 @@ import SettingsLayout from '@/layouts/settings/layout';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => {
+        const dynamicAppName = document.querySelector('meta[name="app-name"]')?.getAttribute('content') || appName;
+        return title ? `${title} - ${dynamicAppName}` : dynamicAppName;
+    },
     layout: (name) => {
         switch (true) {
             case name === 'welcome':
