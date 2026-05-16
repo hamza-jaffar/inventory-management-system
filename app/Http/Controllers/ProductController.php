@@ -10,17 +10,28 @@ use App\Services\ProductService;
 use App\Services\SupplierService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Inertia\Response;
 
-class ProductController extends Controller
+class ProductController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('can:viewAny,App\Models\Product', only: ['index']),
+            new Middleware('can:view,product', only: ['show']),
+            new Middleware('can:create,App\Models\Product', only: ['create', 'store']),
+            new Middleware('can:update,product', only: ['edit', 'update', 'toggleStatus']),
+            new Middleware('can:delete,product', only: ['destroy']),
+        ];
+    }
+
     public function __construct(
         protected ProductService $productService,
         protected CategoryService $categoryService,
         protected SupplierService $supplierService
-    ) {
-        $this->authorizeResource(Product::class, 'product');
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -55,7 +66,7 @@ class ProductController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'status' => 'product-created',
-                'product' => $product
+                'product' => $product,
             ]);
         }
 
@@ -101,7 +112,6 @@ class ProductController extends Controller
      */
     public function toggleStatus(Product $product): RedirectResponse
     {
-        $this->authorize('update', $product);
         $this->productService->toggleStatus($product);
 
         return back()->with('status', 'product-status-updated');

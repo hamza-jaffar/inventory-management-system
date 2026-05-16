@@ -23,6 +23,7 @@ return new class extends Migration
             // Polymorphic relation to link back to the cause (Sale, PO, or Manual Adjustment)
             $table->string('source_type')->comment('App\Models\SalesOrder, App\Models\StockAdjustment, etc.');
             $table->unsignedBigInteger('source_id');
+            $table->string('notes')->nullable();
 
             $table->timestamps();
 

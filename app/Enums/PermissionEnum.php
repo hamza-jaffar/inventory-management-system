@@ -40,6 +40,11 @@ enum PermissionEnum: string
     // Inventory Ledgers
     case VIEW_LEDGERS = 'view ledgers';
 
+    // POS / Sales
+    case VIEW_POS = 'view pos';
+    case CREATE_SALE = 'create sale';
+    case VIEW_SALES = 'view sales';
+
     // System Settings & Users
     case MANAGE_USERS = 'manage users';
     case MANAGE_ROLES = 'manage roles';

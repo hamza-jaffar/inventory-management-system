@@ -8,6 +8,7 @@ import {
     Package,
     ShoppingCart,
     Users,
+    Calculator,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -70,6 +71,16 @@ export function AppSidebar() {
             title: 'Inventory Ledgers',
             href: '/inventory-ledgers',
             icon: BookOpen,
+        }] : []),
+        ...(can('view pos') ? [{
+            title: 'POS (Sell)',
+            href: '/pos',
+            icon: Calculator,
+        }] : []),
+        ...(can('view sales') ? [{
+            title: 'Sales History',
+            href: '/sales',
+            icon: ShoppingCart,
         }] : []),
         ...(can('manage users') ? [{
             title: 'User Management',

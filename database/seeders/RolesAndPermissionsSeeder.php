@@ -35,7 +35,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $managerRole = Role::findOrCreate(RoleEnum::INVENTORY_MANAGER->value);
         $managerRole->givePermissionTo([
             PermissionEnum::VIEW_DASHBOARD->value,
-            
+
             PermissionEnum::VIEW_CATEGORIES->value,
             PermissionEnum::CREATE_CATEGORIES->value,
             PermissionEnum::EDIT_CATEGORIES->value,
@@ -69,6 +69,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $cashierRole->givePermissionTo([
             PermissionEnum::VIEW_DASHBOARD->value,
             PermissionEnum::VIEW_PRODUCTS->value, // Can see products to sell them
+            PermissionEnum::VIEW_POS->value,
+            PermissionEnum::CREATE_SALE->value,
         ]);
 
         // --- VIEWER ---

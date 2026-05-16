@@ -25,7 +25,7 @@ export interface Supplier {
     is_active: boolean;
 }
 
-interface PurchaseOrder {
+export interface PurchaseOrder {
     id: number;
     po_number: string;
     supplier: {
@@ -38,11 +38,24 @@ interface PurchaseOrder {
     received_at: string | null;
 }
 
-interface Category {
+export interface Category {
     id: number;
     name: string;
     slug: string;
     parent?: { name: string };
     is_active: boolean;
     sort_order: number;
+}
+
+export interface Order {
+    id: number;
+    order_number: string;
+    grand_total: number;
+    paid_amount: number;
+    change_amount: number;
+    payment_method: string;
+    order_status: string;
+    created_at: string;
+    cashier: { name: string };
+    items: any[];
 }

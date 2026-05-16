@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
     'variance',
     'source_type',
     'source_id',
+    'notes',
 ])]
 class InventoryLedger extends Model
 {
