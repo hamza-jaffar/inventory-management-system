@@ -35,4 +35,36 @@ class Product extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
+    /**
+     * Get the stock adjustments for the product.
+     */
+    public function stockAdjustments()
+    {
+        return $this->hasMany(StockAdjustment::class);
+    }
+
+    /**
+     * Get the purchase order items for the product.
+     */
+    public function purchaseOrderItems()
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    /**
+     * Get the sales order items for the product.
+     */
+    public function salesOrderItems()
+    {
+        return $this->hasMany(SalesOrderItem::class);
+    }
+
+    /**
+     * Get the inventory ledger entries for the product.
+     */
+    public function inventoryLedgers()
+    {
+        return $this->hasMany(InventoryLedger::class);
+    }
 }

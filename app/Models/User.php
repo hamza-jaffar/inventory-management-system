@@ -31,4 +31,12 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the stock adjustments made by the user.
+     */
+    public function stockAdjustments()
+    {
+        return $this->hasMany(StockAdjustment::class);
+    }
 }
