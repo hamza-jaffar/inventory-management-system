@@ -239,8 +239,8 @@ export default function Dashboard({ stats }: DashboardProps) {
                                                     {item.total_sold} units sold
                                                 </p>
                                             </div>
-                                            <div className="ml-auto flex items-center gap-1 text-sm font-bold text-emerald-600">
-                                                <TrendingUp className="h-4 w-4" />
+                                            <div className="ml-auto flex items-center gap-1 text-xs text-emerald-600">
+                                                <TrendingUp className="h-3 w-3" />
                                                 Popular
                                             </div>
                                         </div>

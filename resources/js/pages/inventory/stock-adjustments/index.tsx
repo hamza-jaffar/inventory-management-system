@@ -29,6 +29,7 @@ import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import AppLayout from '@/layouts/app-layout';
+import Heading from '@/components/heading';
 
 interface StockAdjustmentIndexProps {
     adjustments: {
@@ -95,14 +96,10 @@ const StockAdjustmentIndex = ({
 
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Stock Adjustments
-                        </h1>
-                        <p className="text-muted-foreground">
-                            Manage manual stock adjustments.
-                        </p>
-                    </div>
+                    <Heading
+                        title="Stock Adjustments"
+                        description="Manage manual stock adjustments."
+                    />
                     <Button asChild>
                         <Link href="/stock-adjustments/create">
                             <Plus className="mr-2 h-4 w-4" /> New Adjustment

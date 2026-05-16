@@ -31,6 +31,7 @@ import { useSettings } from '@/hooks/use-settings';
 import { format } from 'date-fns';
 import * as purchaseOrder from '@/routes/purchase-orders';
 import { PurchaseOrder } from '@/types/data';
+import Heading from '@/components/heading';
 
 interface IndexProps {
     purchaseOrders: {
@@ -112,14 +113,10 @@ export default function PurchaseOrderIndex({
 
             <div className="flex flex-col gap-6 p-6">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Purchase Orders
-                        </h1>
-                        <p className="text-muted-foreground">
-                            Manage your purchase orders and incoming inventory.
-                        </p>
-                    </div>
+                    <Heading
+                        title="Purchase Orders"
+                        description="View and manage all purchase orders"
+                    />
                     <Button asChild>
                         <Link href={purchaseOrder.create().url}>
                             <Plus className="mr-2 h-4 w-4" /> Create PO

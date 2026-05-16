@@ -29,6 +29,7 @@ import { format } from 'date-fns';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Heading from '@/components/heading';
 
 interface InventoryLedgerIndexProps {
     ledgers: {
@@ -62,7 +63,12 @@ const InventoryLedgerIndex = ({
 
     const handleSearch = (e?: React.FormEvent) => {
         e?.preventDefault();
-        applyFilters({ search, source_type: sourceType, start_date: startDate, end_date: endDate });
+        applyFilters({
+            search,
+            source_type: sourceType,
+            start_date: startDate,
+            end_date: endDate,
+        });
     };
 
     const applyFilters = (currentFilters: any) => {
@@ -70,7 +76,10 @@ const InventoryLedgerIndex = ({
             '/inventory-ledgers',
             {
                 search: currentFilters.search,
-                source_type: currentFilters.source_type === 'all' ? '' : currentFilters.source_type,
+                source_type:
+                    currentFilters.source_type === 'all'
+                        ? ''
+                        : currentFilters.source_type,
                 start_date: currentFilters.start_date,
                 end_date: currentFilters.end_date,
             },
@@ -80,7 +89,12 @@ const InventoryLedgerIndex = ({
 
     const handleSourceChange = (value: string) => {
         setSourceType(value);
-        applyFilters({ search, source_type: value, start_date: startDate, end_date: endDate });
+        applyFilters({
+            search,
+            source_type: value,
+            start_date: startDate,
+            end_date: endDate,
+        });
     };
 
     const handleReset = () => {
@@ -105,14 +119,10 @@ const InventoryLedgerIndex = ({
             <Head title="Inventory Ledgers" />
 
             <div className="flex flex-col gap-6 p-6">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        Inventory Ledger
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Detailed history of all stock movements and changes.
-                    </p>
-                </div>
+                <Heading
+                    title="Inventory Ledger"
+                    description="Detailed history of all stock movements and changes."
+                />
 
                 <Card>
                     <CardHeader className="space-y-4 pb-4">
@@ -161,7 +171,14 @@ const InventoryLedgerIndex = ({
                                 className="w-full sm:w-auto"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                onBlur={() => applyFilters({ search, source_type: sourceType, start_date: startDate, end_date: endDate })}
+                                onBlur={() =>
+                                    applyFilters({
+                                        search,
+                                        source_type: sourceType,
+                                        start_date: startDate,
+                                        end_date: endDate,
+                                    })
+                                }
                             />
                             <span className="hidden text-muted-foreground sm:inline">
                                 to
@@ -171,7 +188,14 @@ const InventoryLedgerIndex = ({
                                 className="w-full sm:w-auto"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                onBlur={() => applyFilters({ search, source_type: sourceType, start_date: startDate, end_date: endDate })}
+                                onBlur={() =>
+                                    applyFilters({
+                                        search,
+                                        source_type: sourceType,
+                                        start_date: startDate,
+                                        end_date: endDate,
+                                    })
+                                }
                             />
                             <div className="flex gap-2">
                                 <Button
