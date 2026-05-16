@@ -47,7 +47,6 @@ interface EditProps {
 const CategoryEdit = ({ category, parentCategories }: EditProps) => {
     const { data, setData, patch, processing, errors } = useForm({
         name: category.name || '',
-        slug: category.slug || '',
         description: category.description || '',
         parent_id: category.parent_id?.toString() || '',
         is_active: !!category.is_active,
@@ -91,18 +90,6 @@ const CategoryEdit = ({ category, parentCategories }: EditProps) => {
                             <InputError message={errors.name} />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="slug">Slug</Label>
-                            <Input
-                                id="slug"
-                                value={data.slug}
-                                onChange={(e) =>
-                                    setData('slug', e.target.value)
-                                }
-                                placeholder="category-slug"
-                            />
-                            <InputError message={errors.slug} />
-                        </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="description">Description</Label>

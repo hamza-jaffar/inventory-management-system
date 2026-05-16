@@ -36,7 +36,6 @@ interface CreateProps {
 const CategoryCreate = ({ parentCategories }: CreateProps) => {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
-        slug: '',
         description: '',
         parent_id: '',
         is_active: true,
@@ -80,18 +79,6 @@ const CategoryCreate = ({ parentCategories }: CreateProps) => {
                             <InputError message={errors.name} />
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="slug">Slug (Optional)</Label>
-                            <Input
-                                id="slug"
-                                value={data.slug}
-                                onChange={(e) =>
-                                    setData('slug', e.target.value)
-                                }
-                                placeholder="category-slug"
-                            />
-                            <InputError message={errors.slug} />
-                        </div>
 
                         <div className="grid gap-2">
                             <Label htmlFor="description">Description</Label>

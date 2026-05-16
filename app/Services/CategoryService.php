@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Helpers\SlugHelper;
 use App\Models\Category;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class CategoryService
 {
@@ -35,9 +35,7 @@ class CategoryService
      */
     public function create(array $data): Category
     {
-        if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
-        }
+        $data['slug'] = SlugHelper::generate($data['name'], Category::class);
 
         return Category::create($data);
     }
@@ -47,8 +45,8 @@ class CategoryService
      */
     public function update(Category $category, array $data): Category
     {
-        if (empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+        if ($category->name !== $data['name']) {
+            $data['slug'] = SlugHelper::generate($data['name'], Category::class);
         }
 
         $category->update($data);
