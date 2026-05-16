@@ -46,6 +46,7 @@ import * as productsRoutes from '@/routes/products';
 import { useSettings } from '@/hooks/use-settings';
 import { debounce } from 'lodash';
 import { Product } from '@/types/data';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface IndexProps {
     products: {
@@ -68,6 +69,7 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
     const { app_currency_symbol } = useSettings();
     const [productToDelete, setProductToDelete] = useState<number | null>(null);
     const [search, setSearch] = useState(filters.search || '');
+    const { can } = usePermissions();
 
     const confirmDelete = () => {
         if (productToDelete) {
@@ -131,12 +133,14 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                     title="Products"
                     description="Manage your inventory and product catalog"
                 />
-                <Button asChild>
-                    <Link href={productsRoutes.create().url}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Product
-                    </Link>
-                </Button>
+                {can('create products') && (
+                    <Button asChild>
+                        <Link href={productsRoutes.create().url}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Product
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -207,9 +211,11 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                     Status {getSortIcon('is_active')}
                                 </div>
                             </TableHead>
-                            <TableHead className="text-right">
-                                Actions
-                            </TableHead>
+                            {can('edit products') || can('delete products') ? (
+                                <TableHead className="text-right">
+                                    Actions
+                                </TableHead>
+                            ) : null}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -273,10 +279,13 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
+                                            <DropdownMenuTrigger
+                                                asChild
+                                                disabled={!can('edit products')}
+                                            >
                                                 <Button
                                                     variant="ghost"
-                                                    className="h-8 p-0 hover:bg-transparent"
+                                                    className={`h-8 p-0 hover:bg-transparent ${!can('edit products') ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
                                                     <Badge
                                                         variant={
@@ -284,7 +293,6 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                                                 ? 'default'
                                                                 : 'secondary'
                                                         }
-                                                        className="cursor-pointer"
                                                     >
                                                         {product.is_active
                                                             ? 'Active'
@@ -292,60 +300,70 @@ const ProductIndex = ({ products, filters, categories }: IndexProps) => {
                                                     </Badge>
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="start">
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        !product.is_active &&
-                                                        toggleStatus(product.id)
-                                                    }
-                                                >
-                                                    <Check
-                                                        className={`mr-2 h-4 w-4 ${product.is_active ? 'opacity-100' : 'opacity-0'}`}
-                                                    />
-                                                    Active
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        product.is_active &&
-                                                        toggleStatus(product.id)
-                                                    }
-                                                >
-                                                    <X
-                                                        className={`mr-2 h-4 w-4 ${!product.is_active ? 'opacity-100' : 'opacity-0'}`}
-                                                    />
-                                                    Inactive
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
+                                            {can('edit products') && (
+                                                <DropdownMenuContent align="start">
+                                                    <DropdownMenuItem
+                                                        onClick={() =>
+                                                            !product.is_active &&
+                                                            toggleStatus(
+                                                                product.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Check
+                                                            className={`mr-2 h-4 w-4 ${product.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                        />
+                                                        Active
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() =>
+                                                            product.is_active &&
+                                                            toggleStatus(
+                                                                product.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <X
+                                                            className={`mr-2 h-4 w-4 ${!product.is_active ? 'opacity-100' : 'opacity-0'}`}
+                                                        />
+                                                        Inactive
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            )}
                                         </DropdownMenu>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                asChild
-                                            >
-                                                <Link
-                                                    href={
-                                                        productsRoutes.edit(
+                                            {can('edit products') && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    asChild
+                                                >
+                                                    <Link
+                                                        href={
+                                                            productsRoutes.edit(
+                                                                product.id,
+                                                            ).url
+                                                        }
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            )}
+                                            {can('delete products') && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        setProductToDelete(
                                                             product.id,
-                                                        ).url
+                                                        )
                                                     }
                                                 >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    setProductToDelete(
-                                                        product.id,
-                                                    )
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

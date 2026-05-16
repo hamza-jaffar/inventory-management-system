@@ -18,7 +18,9 @@ class ProductController extends Controller
         protected ProductService $productService,
         protected CategoryService $categoryService,
         protected SupplierService $supplierService
-    ) {}
+    ) {
+        $this->authorizeResource(Product::class, 'product');
+    }
 
     /**
      * Display a listing of the resource.
@@ -99,6 +101,7 @@ class ProductController extends Controller
      */
     public function toggleStatus(Product $product): RedirectResponse
     {
+        $this->authorize('update', $product);
         $this->productService->toggleStatus($product);
 
         return back()->with('status', 'product-status-updated');

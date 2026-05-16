@@ -17,10 +17,11 @@ import * as productsRoutes from '@/routes/products';
 import { SearchableSelect } from '@/components/searchable-select';
 import React, { useRef, useState } from 'react';
 import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface CreateProps {
-    categories: { id: number, name: string }[];
-    suppliers: { id: number, name: string }[];
+    categories: { id: number; name: string }[];
+    suppliers: { id: number; name: string }[];
 }
 
 const ProductCreate = ({ categories, suppliers }: CreateProps) => {
@@ -82,13 +83,18 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                 </Button>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <form
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+            >
                 <div className="space-y-6 lg:col-span-2">
                     {/* Basic Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Basic Information</CardTitle>
-                            <CardDescription>Main product details and identification</CardDescription>
+                            <CardDescription>
+                                Main product details and identification
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
@@ -96,32 +102,54 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="e.g. Wireless Mouse G502"
                                 />
-                                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                                {errors.name && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.name}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="sku">SKU (Stock Keeping Unit)</Label>
+                                    <Label htmlFor="sku">
+                                        SKU (Stock Keeping Unit)
+                                    </Label>
                                     <Input
                                         id="sku"
                                         value={data.sku}
-                                        onChange={(e) => setData('sku', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('sku', e.target.value)
+                                        }
                                         placeholder="e.g. LOGI-G502-BLK"
                                     />
-                                    {errors.sku && <p className="text-sm text-destructive">{errors.sku}</p>}
+                                    {errors.sku && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.sku}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="barcode">Barcode (Optional)</Label>
+                                    <Label htmlFor="barcode">
+                                        Barcode (Optional)
+                                    </Label>
                                     <Input
                                         id="barcode"
                                         value={data.barcode}
-                                        onChange={(e) => setData('barcode', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('barcode', e.target.value)
+                                        }
                                         placeholder="UPC, EAN, or ISBN"
                                     />
-                                    {errors.barcode && <p className="text-sm text-destructive">{errors.barcode}</p>}
+                                    {errors.barcode && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.barcode}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -130,11 +158,17 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                                 <Textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('description', e.target.value)
+                                    }
                                     rows={4}
                                     placeholder="Provide a detailed description of the product..."
                                 />
-                                {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+                                {errors.description && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.description}
+                                    </p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -143,66 +177,123 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Inventory & Pricing</CardTitle>
-                            <CardDescription>Stock levels and financial details</CardDescription>
+                            <CardDescription>
+                                Stock levels and financial details
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="quantity">Initial Quantity</Label>
+                                    <Label htmlFor="quantity">
+                                        Initial Quantity
+                                    </Label>
                                     <Input
                                         id="quantity"
                                         type="number"
                                         value={data.quantity}
-                                        onChange={(e) => setData('quantity', parseInt(e.target.value) || 0)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'quantity',
+                                                parseInt(e.target.value) || 0,
+                                            )
+                                        }
                                     />
-                                    {errors.quantity && <p className="text-sm text-destructive">{errors.quantity}</p>}
+                                    {errors.quantity && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.quantity}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="safety_stock">Safety Stock Level</Label>
+                                    <Label htmlFor="safety_stock">
+                                        Safety Stock Level
+                                    </Label>
                                     <Input
                                         id="safety_stock"
                                         type="number"
                                         value={data.safety_stock}
-                                        onChange={(e) => setData('safety_stock', parseInt(e.target.value) || 0)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'safety_stock',
+                                                parseInt(e.target.value) || 0,
+                                            )
+                                        }
                                     />
-                                    {errors.safety_stock && <p className="text-sm text-destructive">{errors.safety_stock}</p>}
+                                    {errors.safety_stock && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.safety_stock}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                 <div className="space-y-2">
-                                    <Label htmlFor="cost_price">Cost Price ($)</Label>
+                                    <Label htmlFor="cost_price">
+                                        Cost Price ($)
+                                    </Label>
                                     <Input
                                         id="cost_price"
                                         type="number"
                                         step="0.01"
                                         value={data.cost_price}
-                                        onChange={(e) => setData('cost_price', parseFloat(e.target.value) || 0)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'cost_price',
+                                                parseFloat(e.target.value) || 0,
+                                            )
+                                        }
                                     />
-                                    {errors.cost_price && <p className="text-sm text-destructive">{errors.cost_price}</p>}
+                                    {errors.cost_price && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.cost_price}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="sale_price">Sale Price ($)</Label>
+                                    <Label htmlFor="sale_price">
+                                        Sale Price ($)
+                                    </Label>
                                     <Input
                                         id="sale_price"
                                         type="number"
                                         step="0.01"
                                         value={data.sale_price}
-                                        onChange={(e) => setData('sale_price', parseFloat(e.target.value) || 0)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'sale_price',
+                                                parseFloat(e.target.value) || 0,
+                                            )
+                                        }
                                     />
-                                    {errors.sale_price && <p className="text-sm text-destructive">{errors.sale_price}</p>}
+                                    {errors.sale_price && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.sale_price}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="retail_price">Retail Price ($)</Label>
+                                    <Label htmlFor="retail_price">
+                                        Retail Price ($)
+                                    </Label>
                                     <Input
                                         id="retail_price"
                                         type="number"
                                         step="0.01"
                                         value={data.retail_price}
-                                        onChange={(e) => setData('retail_price', e.target.value)}
+                                        onChange={(e) =>
+                                            setData(
+                                                'retail_price',
+                                                e.target.value,
+                                            )
+                                        }
                                         placeholder="MSRP (Optional)"
                                     />
-                                    {errors.retail_price && <p className="text-sm text-destructive">{errors.retail_price}</p>}
+                                    {errors.retail_price && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.retail_price}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>
@@ -216,29 +307,45 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                             <CardTitle>Product Image</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div 
-                                className="relative flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 hover:bg-muted/80 transition-colors overflow-hidden"
+                            <div
+                                className="relative flex aspect-square cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed bg-muted/50 transition-colors hover:bg-muted/80"
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 {imagePreview ? (
                                     <>
-                                        <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <p className="text-white text-sm font-medium">Change Image</p>
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="h-full w-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                                            <p className="text-sm font-medium text-white">
+                                                Change Image
+                                            </p>
                                         </div>
                                     </>
                                 ) : (
                                     <div className="flex flex-col items-center gap-2 p-4 text-center">
                                         <ImagePlus className="h-10 w-10 text-muted-foreground" />
                                         <div className="space-y-1">
-                                            <p className="text-sm font-medium">Click to upload</p>
-                                            <p className="text-xs text-muted-foreground">PNG, JPG or WEBP (Max 2MB)</p>
+                                            <p className="text-sm font-medium">
+                                                Click to upload
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                PNG, JPG or WEBP (Max 2MB)
+                                            </p>
                                         </div>
                                     </div>
                                 )}
                             </div>
                             {imagePreview && (
-                                <Button type="button" variant="outline" size="sm" className="w-full" onClick={removeImage}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={removeImage}
+                                >
                                     <X className="mr-2 h-4 w-4" /> Remove Image
                                 </Button>
                             )}
@@ -249,7 +356,11 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                                 accept="image/*"
                                 onChange={handleImageChange}
                             />
-                            {errors.image && <p className="text-sm text-destructive">{errors.image}</p>}
+                            {errors.image && (
+                                <p className="text-sm text-destructive">
+                                    {errors.image}
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -267,43 +378,73 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                                         label: cat.name,
                                     }))}
                                     value={data.category_id}
-                                    onValueChange={(value) => setData('category_id', value)}
+                                    onValueChange={(value) =>
+                                        setData('category_id', value)
+                                    }
                                     placeholder="Select a category"
                                     searchPlaceholder="Search categories..."
                                 />
-                                {errors.category_id && <p className="text-sm text-destructive">{errors.category_id}</p>}
+                                {errors.category_id && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.category_id}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="supplier_id">Primary Supplier</Label>
+                                <Label htmlFor="supplier_id">
+                                    Primary Supplier
+                                </Label>
                                 <SearchableSelect
                                     options={suppliers.map((sup) => ({
                                         value: sup.id.toString(),
                                         label: sup.name,
                                     }))}
                                     value={data.supplier_id}
-                                    onValueChange={(value) => setData('supplier_id', value)}
+                                    onValueChange={(value) =>
+                                        setData('supplier_id', value)
+                                    }
                                     placeholder="Select a supplier"
                                     searchPlaceholder="Search suppliers..."
                                 />
-                                {errors.supplier_id && <p className="text-sm text-destructive">{errors.supplier_id}</p>}
+                                {errors.supplier_id && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.supplier_id}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex items-center space-x-2 py-2">
                                 <Checkbox
                                     id="is_active"
                                     checked={data.is_active}
-                                    onCheckedChange={(checked) => setData('is_active', !!checked)}
+                                    onCheckedChange={(checked) =>
+                                        setData('is_active', !!checked)
+                                    }
                                 />
-                                <Label htmlFor="is_active" className="text-sm font-medium leading-none cursor-pointer">
+                                <Label
+                                    htmlFor="is_active"
+                                    className="cursor-pointer text-sm leading-none font-medium"
+                                >
                                     Publish product (Active)
                                 </Label>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Button type="submit" className="w-full" disabled={processing}>
-                        {processing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</> : 'Create Product'}
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={processing}
+                    >
+                        {processing ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
+                                Creating...
+                            </>
+                        ) : (
+                            'Create Product'
+                        )}
                     </Button>
                 </div>
             </form>
