@@ -10,13 +10,38 @@ use Illuminate\Support\Collection;
 class SupplierService
 {
     /**
-     * Get paginated suppliers.
+     * Get paginated suppliers with filters.
      */
-    public function getPaginated(int $perPage = 10): LengthAwarePaginator
+    public function getPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         return Supplier::query()
-            ->orderBy('name')
-            ->paginate($perPage);
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('contact_name', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['sort'] ?? null, function ($query, $sort) {
+                $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
+                $field = ltrim($sort, '-');
+                $query->orderBy($field, $direction);
+            }, function ($query) {
+                $query->orderBy('name');
+            })
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    /**
+     * Toggle supplier status.
+     */
+    public function toggleStatus(Supplier $supplier): Supplier
+    {
+        $supplier->update(['is_active' => ! $supplier->is_active]);
+
+        return $supplier;
     }
 
     /**

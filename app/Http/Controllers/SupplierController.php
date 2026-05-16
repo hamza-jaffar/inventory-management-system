@@ -7,6 +7,7 @@ use App\Http\Requests\Supplier\UpdateSupplierRequest;
 use App\Models\Supplier;
 use App\Services\SupplierService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,11 +20,22 @@ class SupplierController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         return Inertia::render('suppliers/index', [
-            'suppliers' => $this->supplierService->getPaginated(10),
+            'suppliers' => $this->supplierService->getPaginated($request->only(['search', 'sort'])),
+            'filters' => $request->only(['search', 'sort']),
         ]);
+    }
+
+    /**
+     * Toggle supplier status.
+     */
+    public function toggleStatus(Supplier $supplier): RedirectResponse
+    {
+        $this->supplierService->toggleStatus($supplier);
+
+        return back()->with('success', 'Supplier status updated successfully.');
     }
 
     /**

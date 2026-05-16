@@ -1,0 +1,22 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Supplier;
+use Illuminate\Database\Seeder;
+
+class SupplierSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        Supplier::factory()->count(15)->create();
+
+        // Create a few inactive suppliers
+        Supplier::factory()->count(3)->create([
+            'is_active' => false,
+        ]);
+    }
+}

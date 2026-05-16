@@ -7,6 +7,7 @@ use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Response;
 
 class CategoryController extends Controller
@@ -18,11 +19,22 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         return inertia('categories/index', [
-            'categories' => $this->categoryService->getPaginated(),
+            'categories' => $this->categoryService->getPaginated($request->only(['search', 'sort'])),
+            'filters' => $request->only(['search', 'sort']),
         ]);
+    }
+
+    /**
+     * Toggle category status.
+     */
+    public function toggleStatus(Category $category): RedirectResponse
+    {
+        $this->categoryService->toggleStatus($category);
+
+        return back()->with('status', 'category-status-updated');
     }
 
     /**

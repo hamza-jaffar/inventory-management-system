@@ -9,10 +9,10 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Pencil, Trash2, Mail, Phone, Globe } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Mail, Phone, Search, ArrowUpDown, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -23,7 +23,15 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import * as suppliersRoutes from '@/routes/suppliers';
+import { debounce } from 'lodash';
 
 interface Supplier {
     id: number;
@@ -45,10 +53,15 @@ interface IndexProps {
             active: boolean;
         }[];
     };
+    filters: {
+        search?: string;
+        sort?: string;
+    };
 }
 
-const SupplierIndex = ({ suppliers }: IndexProps) => {
+const SupplierIndex = ({ suppliers, filters }: IndexProps) => {
     const [supplierToDelete, setSupplierToDelete] = useState<number | null>(null);
+    const [search, setSearch] = useState(filters.search || '');
 
     const confirmDelete = () => {
         if (supplierToDelete) {
@@ -58,31 +71,98 @@ const SupplierIndex = ({ suppliers }: IndexProps) => {
         }
     };
 
+    const handleSearch = useCallback(
+        debounce((value: string) => {
+            router.get(
+                suppliersRoutes.index().url,
+                { ...filters, search: value },
+                { preserveState: true, replace: true }
+            );
+        }, 300),
+        [filters]
+    );
+
+    useEffect(() => {
+        if (search !== (filters.search || '')) {
+            handleSearch(search);
+        }
+    }, [search]);
+
+    const toggleSort = (field: string) => {
+        let newSort = field;
+        if (filters.sort === field) {
+            newSort = `-${field}`;
+        } else if (filters.sort === `-${field}`) {
+            newSort = '';
+        }
+
+        router.get(
+            suppliersRoutes.index().url,
+            { ...filters, sort: newSort },
+            { preserveState: true }
+        );
+    };
+
+    const toggleStatus = (id: number) => {
+        router.patch(suppliersRoutes.toggleStatus(id).url, {}, {
+            preserveScroll: true,
+        });
+    };
+
+    const getSortIcon = (field: string) => {
+        if (filters.sort === field) return <ChevronUp className="ml-2 h-4 w-4" />;
+        if (filters.sort === `-${field}`) return <ChevronDown className="ml-2 h-4 w-4" />;
+        return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
+    };
+
     return (
         <div className="mx-auto w-full max-w-7xl space-y-6 p-4">
             <Head title="Suppliers" />
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <Heading
                     title="Suppliers"
                     description="Manage your product suppliers and contact information"
                 />
-                <Button asChild>
-                    <Link href={suppliersRoutes.create().url}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Supplier
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search suppliers..."
+                            className="pl-8"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <Button asChild>
+                        <Link href={suppliersRoutes.create().url}>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Supplier
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <div className="rounded-md border bg-card">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Supplier</TableHead>
-                            <TableHead>Contact</TableHead>
+                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('name')}>
+                                <div className="flex items-center">
+                                    Supplier {getSortIcon('name')}
+                                </div>
+                            </TableHead>
+                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('contact_name')}>
+                                <div className="flex items-center">
+                                    Contact {getSortIcon('contact_name')}
+                                </div>
+                            </TableHead>
                             <TableHead>Communication</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort('is_active')}>
+                                <div className="flex items-center">
+                                    Status {getSortIcon('is_active')}
+                                </div>
+                            </TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -114,9 +194,28 @@ const SupplierIndex = ({ suppliers }: IndexProps) => {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={supplier.is_active ? 'default' : 'secondary'}>
-                                            {supplier.is_active ? 'Active' : 'Inactive'}
-                                        </Badge>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 p-0 hover:bg-transparent">
+                                                    <Badge
+                                                        variant={supplier.is_active ? 'default' : 'secondary'}
+                                                        className="cursor-pointer"
+                                                    >
+                                                        {supplier.is_active ? 'Active' : 'Inactive'}
+                                                    </Badge>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start">
+                                                <DropdownMenuItem onClick={() => !supplier.is_active && toggleStatus(supplier.id)}>
+                                                    <Check className={`mr-2 h-4 w-4 ${supplier.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                    Active
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => supplier.is_active && toggleStatus(supplier.id)}>
+                                                    <X className={`mr-2 h-4 w-4 ${!supplier.is_active ? 'opacity-100' : 'opacity-0'}`} />
+                                                    Inactive
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
@@ -157,7 +256,7 @@ const SupplierIndex = ({ suppliers }: IndexProps) => {
                             size="sm"
                             asChild={!!link.url}
                             disabled={!link.url}
-                            className={link.active ? 'bg-primary text-primary-foreground' : ''}
+                            className={link.active ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}
                         >
                             {link.url ? (
                                 <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />

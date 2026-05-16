@@ -10,14 +10,36 @@ use Illuminate\Support\Collection;
 class CategoryService
 {
     /**
-     * Get paginated categories.
+     * Get paginated categories with filters.
      */
-    public function getPaginated(int $perPage = 10): LengthAwarePaginator
+    public function getPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         return Category::with('parent')
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->paginate($perPage);
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['sort'] ?? null, function ($query, $sort) {
+                $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
+                $field = ltrim($sort, '-');
+                $query->orderBy($field, $direction);
+            }, function ($query) {
+                $query->orderBy('sort_order')->orderBy('name');
+            })
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    /**
+     * Toggle category status.
+     */
+    public function toggleStatus(Category $category): Category
+    {
+        $category->update(['is_active' => ! $category->is_active]);
+
+        return $category;
     }
 
     /**
