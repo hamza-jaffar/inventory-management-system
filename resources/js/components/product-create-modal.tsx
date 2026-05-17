@@ -14,10 +14,12 @@ import {
 } from '@/components/ui/dialog';
 import InputError from '@/components/input-error';
 import axios from 'axios';
-import { Plus } from 'lucide-react';
+import { Plus, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import products from '@/routes/products';
 import { SearchableSelect } from '@/components/searchable-select';
+import { useBarcodeScanner } from '@/hooks/use-barcode-scanner';
+import { BarcodeScanner } from '@/components/barcode-scanner';
 
 interface ProductCreateModalProps {
     categories: any[];
@@ -46,6 +48,13 @@ export function ProductCreateModal({
         safety_stock: '10',
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    useBarcodeScanner((scanned) => {
+        if (open) {
+            setData((prev) => ({ ...prev, barcode: scanned }));
+        }
+    });
 
     useEffect(() => {
         if (open && defaultSupplierId) {
@@ -168,6 +177,41 @@ export function ProductCreateModal({
                                 }
                             />
                             <InputError message={errors.sku} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="barcode">Barcode</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="barcode"
+                                    value={data.barcode}
+                                    onChange={(e) =>
+                                        setData({ ...data, barcode: e.target.value })
+                                    }
+                                    className="flex-1"
+                                />
+                                <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button type="button" variant="outline" className="shrink-0 px-3">
+                                            <Camera className="h-4 w-4" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Scan Barcode</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="p-4">
+                                            <BarcodeScanner 
+                                                onScan={(scanned) => {
+                                                    setData((prev) => ({ ...prev, barcode: scanned }));
+                                                    setIsScannerOpen(false);
+                                                }} 
+                                                onClose={() => setIsScannerOpen(false)} 
+                                            />
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                            <InputError message={errors.barcode} />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="cost_price">

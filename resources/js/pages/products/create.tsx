@@ -16,8 +16,17 @@ import Heading from '@/components/heading';
 import * as productsRoutes from '@/routes/products';
 import { SearchableSelect } from '@/components/searchable-select';
 import React, { useRef, useState } from 'react';
-import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { ImagePlus, X, Loader2, Camera } from 'lucide-react';
 import { usePermissions } from '@/hooks/use-permissions';
+import { useBarcodeScanner } from '@/hooks/use-barcode-scanner';
+import { BarcodeScanner } from '@/components/barcode-scanner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface CreateProps {
     categories: { id: number; name: string }[];
@@ -41,7 +50,14 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
         category_id: '',
         supplier_id: '',
         is_active: true,
+        is_active: true,
         image: null as File | null,
+    });
+    
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    useBarcodeScanner((scanned) => {
+        setData('barcode', scanned);
     });
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,14 +153,38 @@ const ProductCreate = ({ categories, suppliers }: CreateProps) => {
                                     <Label htmlFor="barcode">
                                         Barcode (Optional)
                                     </Label>
-                                    <Input
-                                        id="barcode"
-                                        value={data.barcode}
-                                        onChange={(e) =>
-                                            setData('barcode', e.target.value)
-                                        }
-                                        placeholder="UPC, EAN, or ISBN"
-                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="barcode"
+                                            value={data.barcode}
+                                            onChange={(e) =>
+                                                setData('barcode', e.target.value)
+                                            }
+                                            placeholder="UPC, EAN, or ISBN"
+                                            className="flex-1"
+                                        />
+                                        <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button type="button" variant="outline" className="shrink-0 px-3">
+                                                    <Camera className="h-4 w-4" />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-md">
+                                                <DialogHeader>
+                                                    <DialogTitle>Scan Barcode</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="p-4">
+                                                    <BarcodeScanner 
+                                                        onScan={(scanned) => {
+                                                            setData('barcode', scanned);
+                                                            setIsScannerOpen(false);
+                                                        }} 
+                                                        onClose={() => setIsScannerOpen(false)} 
+                                                    />
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
                                     {errors.barcode && (
                                         <p className="text-sm text-destructive">
                                             {errors.barcode}

@@ -21,12 +21,21 @@ import {
     Check,
     ChevronsUpDown,
     Command as CommandIcon,
+    Camera,
 } from 'lucide-react';
 import { useSettings } from '@/hooks/use-settings';
 import { toast } from 'sonner';
 import { Product } from '@/types/data';
 import * as salesRoute from '@/routes/sales';
-import { cn } from '@/lib/utils';
+import { cn, playSuccessSound, playErrorSound } from '@/lib/utils';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import { BarcodeScanner } from '@/components/barcode-scanner';
 import {
     Command,
     CommandEmpty,
@@ -61,6 +70,22 @@ const POS = ({ products }: POSProps) => {
     const [paidAmount, setPaidAmount] = useState<number>(0);
     const [globalDiscount, setGlobalDiscount] = useState<number>(0);
     const [globalTax, setGlobalTax] = useState<number>(0);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    const handleScan = (decodedText: string) => {
+        const cleanText = decodedText.trim();
+        const product = products.find((p) => p.barcode === cleanText || p.sku === cleanText);
+        if (product) {
+            playSuccessSound();
+            addToCart(product);
+            toast.success(`Added ${product.name} to cart`);
+            setIsScannerOpen(false);
+            setSearch('');
+        } else {
+            playErrorSound();
+            toast.error(`Product with barcode ${cleanText} not found`);
+        }
+    };
 
     // Manual filtering for the command palette
     const filteredProducts = useMemo(() => {
@@ -70,7 +95,8 @@ const POS = ({ products }: POSProps) => {
         return active.filter(
             (p) =>
                 p.name.toLowerCase().includes(lower) ||
-                p.sku.toLowerCase().includes(lower),
+                p.sku.toLowerCase().includes(lower) ||
+                (p.barcode && p.barcode.toLowerCase().includes(lower)),
         );
     }, [products, search]);
 
@@ -85,6 +111,40 @@ const POS = ({ products }: POSProps) => {
         document.addEventListener('keydown', down);
         return () => document.removeEventListener('keydown', down);
     }, []);
+
+    // Hardware Barcode Scanner listener
+    useEffect(() => {
+        let barcodeBuffer = '';
+        let lastKeyTime = Date.now();
+
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+            const currentTime = Date.now();
+            
+            if (currentTime - lastKeyTime > 50) {
+                barcodeBuffer = '';
+            }
+
+            if (e.key === 'Enter') {
+                if (barcodeBuffer.length >= 3) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const scanned = barcodeBuffer;
+                    barcodeBuffer = '';
+                    handleScan(scanned);
+                }
+            } else if (e.key.length === 1) {
+                barcodeBuffer += e.key;
+            }
+
+            lastKeyTime = currentTime;
+        };
+
+        // Use capture phase to intercept before inputs process it
+        window.addEventListener('keydown', handleGlobalKeyDown, true);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
+    }, [products]);
 
     const addToCart = (product: Product) => {
         if (product.quantity <= 0) {
@@ -203,7 +263,7 @@ const POS = ({ products }: POSProps) => {
                 {/* Left Side: Product Search & List */}
                 <ResizablePanel defaultSize={60} minSize={30}>
                     <div className="flex h-full flex-col p-4">
-                        <div className="mb-4">
+                        <div className="mb-4 flex gap-2">
                             <Popover
                                 open={openSearch}
                                 onOpenChange={setOpenSearch}
@@ -213,13 +273,13 @@ const POS = ({ products }: POSProps) => {
                                         variant="outline"
                                         role="combobox"
                                         aria-expanded={openSearch}
-                                        className="h-12 w-full justify-between"
+                                        className="h-12 flex-1 justify-between"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Search className="h-5 w-5 text-muted-foreground" />
                                             {search
                                                 ? search
-                                                : 'Search or scan product... (Ctrl+K)'}
+                                                : 'Search product... (Ctrl+K)'}
                                         </div>
                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                     </Button>
@@ -337,6 +397,25 @@ const POS = ({ products }: POSProps) => {
                                     </Command>
                                 </PopoverContent>
                             </Popover>
+
+                            <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" className="h-12 w-12 shrink-0">
+                                        <Camera className="h-5 w-5" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Scan Barcode</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="p-4">
+                                        <BarcodeScanner 
+                                            onScan={handleScan} 
+                                            onClose={() => setIsScannerOpen(false)} 
+                                        />
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                         </div>
 
                         <ScrollArea className="flex-1">

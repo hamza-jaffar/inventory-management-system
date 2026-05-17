@@ -16,7 +16,16 @@ import Heading from '@/components/heading';
 import * as productsRoutes from '@/routes/products';
 import { SearchableSelect } from '@/components/searchable-select';
 import React, { useRef, useState } from 'react';
-import { Loader2, Package } from 'lucide-react';
+import { Loader2, Package, Camera } from 'lucide-react';
+import { useBarcodeScanner } from '@/hooks/use-barcode-scanner';
+import { BarcodeScanner } from '@/components/barcode-scanner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface Product {
     id: number;
@@ -61,6 +70,12 @@ const ProductEdit = ({ product, categories, suppliers }: EditProps) => {
         supplier_id: product.supplier_id?.toString() || '',
         is_active: product.is_active,
         image: null as File | null,
+    });
+    
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    useBarcodeScanner((scanned) => {
+        setData('barcode', scanned);
     });
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,11 +149,35 @@ const ProductEdit = ({ product, categories, suppliers }: EditProps) => {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="barcode">Barcode (Optional)</Label>
-                                    <Input
-                                        id="barcode"
-                                        value={data.barcode}
-                                        onChange={(e) => setData('barcode', e.target.value)}
-                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="barcode"
+                                            value={data.barcode}
+                                            onChange={(e) => setData('barcode', e.target.value)}
+                                            className="flex-1"
+                                        />
+                                        <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button type="button" variant="outline" className="shrink-0 px-3">
+                                                    <Camera className="h-4 w-4" />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-md">
+                                                <DialogHeader>
+                                                    <DialogTitle>Scan Barcode</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="p-4">
+                                                    <BarcodeScanner 
+                                                        onScan={(scanned) => {
+                                                            setData('barcode', scanned);
+                                                            setIsScannerOpen(false);
+                                                        }} 
+                                                        onClose={() => setIsScannerOpen(false)} 
+                                                    />
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
                                     {errors.barcode && <p className="text-sm text-destructive">{errors.barcode}</p>}
                                 </div>
                             </div>

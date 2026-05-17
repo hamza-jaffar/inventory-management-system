@@ -21,7 +21,7 @@ class ProductService
     {
         return Product::where('is_active', true)
             ->orderBy('name')
-            ->get(['id', 'name', 'sku', 'sale_price', 'retail_price', 'quantity', 'image_path', 'is_active'])
+            ->get(['id', 'name', 'sku', 'barcode', 'sale_price', 'retail_price', 'quantity', 'image_path', 'is_active'])
             ->map(function ($product) {
                 $product->image_url = StorageHelper::url($product->image_path);
 
