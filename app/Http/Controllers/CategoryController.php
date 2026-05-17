@@ -76,7 +76,8 @@ class CategoryController extends Controller
         return inertia('categories/edit', [
             'category' => $category,
             'parentCategories' => $this->categoryService->getActiveCategories()
-                ->where('id', '!=', $category->id),
+                ->where('id', '!=', $category->id)
+                ->values(),
         ]);
     }
 
