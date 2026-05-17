@@ -1,0 +1,62 @@
+{
+  "name": "inventory-management-system-desktop",
+  "version": "1.0.0",
+  "description": "Premium Inventory Management System Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "cross-spawn": "^7.0.6",
+    "portfinder": "^1.0.32"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.inventory.management",
+    "productName": "InventoryManager",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "../app/**/*",
+      "../bootstrap/**/*",
+      "../config/**/*",
+      "../database/**/*",
+      "../public/**/*",
+      "../routes/**/*",
+      "../storage/**/*",
+      "../vendor/**/*",
+      "../artisan",
+      "../composer.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../bin",
+        "to": "bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Inventory Manager"
+    }
+  }
+}

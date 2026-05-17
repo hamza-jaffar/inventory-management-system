@@ -10,6 +10,8 @@ import {
     Users,
     Calculator,
     BarChart3,
+    SlidersHorizontal,
+    Receipt,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -71,7 +73,7 @@ export function AppSidebar() {
         ...(can('view adjustments') ? [{
             title: 'Stock Adjustments',
             href: '/stock-adjustments',
-            icon: Package,
+            icon: SlidersHorizontal,
         }] : []),
         ...(can('view ledgers') ? [{
             title: 'Inventory Ledgers',
@@ -86,7 +88,7 @@ export function AppSidebar() {
         ...(can('view sales') ? [{
             title: 'Sales History',
             href: '/sales',
-            icon: ShoppingCart,
+            icon: Receipt,
         }] : []),
         ...(can('manage users') ? [{
             title: 'User Management',

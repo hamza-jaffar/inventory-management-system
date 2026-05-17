@@ -27,3 +27,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/bin/php
+/electron/dist
+/electron/node_modules
+/electron/build

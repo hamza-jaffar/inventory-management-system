@@ -7,6 +7,7 @@ export type User = {
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;
+    roles?: Role[];
     [key: string]: unknown;
 };
 
@@ -21,4 +22,10 @@ export type TwoFactorSetupData = {
 
 export type TwoFactorSecretKey = {
     secretKey: string;
+};
+
+export type Role = {
+    id: number;
+    name: string;
+    label: string;
 };

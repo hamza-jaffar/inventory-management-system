@@ -13,17 +13,14 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::redirect('/', 'dashboard')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::middleware(['permission:'.PermissionEnum::MANAGE_USERS->value])->group(function () {
-        Route::resource('users', UserController::class)->only(['index', 'update']);
+        Route::resource('users', UserController::class)->only(['index', 'update', 'store', 'destroy']);
     });
 
     Route::middleware(['permission:'.PermissionEnum::VIEW_CATEGORIES->value])->group(function () {

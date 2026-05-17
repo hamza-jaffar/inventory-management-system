@@ -18,6 +18,8 @@ export default function Profile({
 }) {
     const { auth } = usePage().props;
 
+    console.log(auth.user.roles?.[0].name);
+
     return (
         <>
             <Head title="Profile settings" />
@@ -117,7 +119,9 @@ export default function Profile({
                 </Form>
             </div>
 
-            <DeleteUser />
+            {auth.user.roles &&
+                auth.user.roles.length > 0 &&
+                auth.user.roles[0].name != 'admin' && <DeleteUser />}
         </>
     );
 }
