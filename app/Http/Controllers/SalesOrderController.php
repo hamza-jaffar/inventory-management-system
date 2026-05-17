@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SalesOrder;
 use App\Services\ProductService;
 use App\Services\SalesOrderService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -16,7 +18,7 @@ class SalesOrderController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('can:viewAny,App\Models\SalesOrder', only: ['index', 'pos']),
-            new Middleware('can:view,sales_order', only: ['show']),
+            new Middleware('can:view,sales_order', only: ['show', 'download']),
             new Middleware('can:create,App\Models\SalesOrder', only: ['store']),
         ];
     }
@@ -69,8 +71,34 @@ class SalesOrderController extends Controller implements HasMiddleware
         ]);
 
         $order = $this->salesOrderService->createOrder($validated);
+        $order->load(['cashier', 'items.product']);
 
         return redirect()->route('sales.pos')
-            ->with('success', "Order #{$order->order_number} created successfully.");
+            ->with('success', "Order #{$order->order_number} created successfully.")
+            ->with('created_order', $order);
+    }
+
+    /**
+     * Display the specified sales order details (as JSON).
+     */
+    public function show(SalesOrder $salesOrder)
+    {
+        $salesOrder->load(['cashier', 'items.product']);
+
+        return response()->json($salesOrder);
+    }
+
+    /**
+     * Download the invoice PDF.
+     */
+    public function download(SalesOrder $salesOrder)
+    {
+        $salesOrder->load(['cashier', 'items.product']);
+
+        $pdf = Pdf::loadView('reports.invoice', [
+            'order' => $salesOrder,
+        ]);
+
+        return $pdf->download('invoice-'.$salesOrder->order_number.'.pdf');
     }
 }

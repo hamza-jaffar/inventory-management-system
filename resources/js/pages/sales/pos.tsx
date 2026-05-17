@@ -1,5 +1,7 @@
-import { Head, router } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { InvoiceReceiptModal } from '@/components/invoice-receipt-modal';
+import { Order } from '@/types/data';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,7 +51,6 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { useEffect } from 'react';
 
 interface CartItem extends Product {
     cart_quantity: number;
@@ -62,6 +63,7 @@ interface POSProps {
 }
 
 const POS = ({ products }: POSProps) => {
+    const { flash } = usePage().props as any;
     const { app_currency_symbol } = useSettings();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [search, setSearch] = useState('');
@@ -71,6 +73,16 @@ const POS = ({ products }: POSProps) => {
     const [globalDiscount, setGlobalDiscount] = useState<number>(0);
     const [globalTax, setGlobalTax] = useState<number>(0);
     const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
+    const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+    useEffect(() => {
+        if (flash?.created_order) {
+            setReceiptOrder(flash.created_order);
+            setIsReceiptOpen(true);
+        }
+    }, [flash?.created_order]);
 
     const handleScan = (decodedText: string) => {
         const cleanText = decodedText.trim();
@@ -662,6 +674,12 @@ const POS = ({ products }: POSProps) => {
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
+
+            <InvoiceReceiptModal
+                isOpen={isReceiptOpen}
+                onClose={() => setIsReceiptOpen(false)}
+                order={receiptOrder}
+            />
         </div>
     );
 };

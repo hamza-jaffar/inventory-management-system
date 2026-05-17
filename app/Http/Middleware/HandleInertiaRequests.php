@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
                 'roles' => $request->user() ? $request->user()->getRoleNames() : [],
             ],
-            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'settings' => [
                 'app_name' => $settings->get('app_name', config('app.name')),
                 'app_logo_url' => $settings->get('app_logo_url'),
@@ -58,6 +58,11 @@ class HandleInertiaRequests extends Middleware
                 'app_country' => $settings->get('app_country'),
                 'app_phone' => $settings->get('app_phone'),
                 'app_email' => $settings->get('app_email'),
+            ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'created_order' => $request->session()->get('created_order'),
             ],
         ];
     }

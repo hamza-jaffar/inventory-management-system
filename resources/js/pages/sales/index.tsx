@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import {
@@ -16,6 +16,7 @@ import { Eye, PlusCircle } from 'lucide-react';
 import { useSettings } from '@/hooks/use-settings';
 import * as salesRoute from '@/routes/sales';
 import { Order } from '@/types/data';
+import { InvoiceReceiptModal } from '@/components/invoice-receipt-modal';
 
 interface IndexProps {
     orders: {
@@ -25,6 +26,7 @@ interface IndexProps {
 
 const SalesIndex = ({ orders }: IndexProps) => {
     const { app_currency_symbol } = useSettings();
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
     return (
         <div className="mx-auto w-full max-w-7xl space-y-6 p-4">
@@ -71,23 +73,28 @@ const SalesIndex = ({ orders }: IndexProps) => {
                                 </TableCell>
                                 <TableCell>{order.cashier?.name}</TableCell>
                                 <TableCell>
-                                    <Badge variant="outline">
+                                    <Badge variant="outline" className="uppercase">
                                         {order.payment_method}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
-                                    {app_currency_symbol} {order.grand_total}
+                                    {app_currency_symbol} {Number(order.grand_total).toFixed(2)}
                                 </TableCell>
                                 <TableCell>
                                     <Badge
                                         variant="default"
-                                        className="bg-green-500 hover:bg-green-600"
+                                        className="bg-green-500 hover:bg-green-600 uppercase"
                                     >
                                         {order.order_status}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setSelectedOrder(order)}
+                                        className="cursor-pointer"
+                                    >
                                         <Eye className="h-4 w-4" />
                                     </Button>
                                 </TableCell>
@@ -106,6 +113,13 @@ const SalesIndex = ({ orders }: IndexProps) => {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Receipt invoice details overlay modal */}
+            <InvoiceReceiptModal
+                isOpen={selectedOrder !== null}
+                onClose={() => setSelectedOrder(null)}
+                order={selectedOrder}
+            />
         </div>
     );
 };

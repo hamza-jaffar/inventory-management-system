@@ -21,7 +21,7 @@ class SalesOrderPolicy
      */
     public function view(User $user, SalesOrder $salesOrder): bool
     {
-        return $user->can(PermissionEnum::VIEW_SALES->value);
+        return $user->can(PermissionEnum::VIEW_SALES->value) || $user->can(PermissionEnum::VIEW_POS->value);
     }
 
     /**

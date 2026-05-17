@@ -65,6 +65,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('sales', [SalesOrderController::class, 'index'])->name('sales.index');
     });
 
+    Route::middleware(['permission:'.PermissionEnum::VIEW_SALES->value.'|'.PermissionEnum::VIEW_POS->value])->group(function () {
+        Route::get('sales/{sales_order}', [SalesOrderController::class, 'show'])->name('sales.show');
+        Route::get('sales/{sales_order}/download', [SalesOrderController::class, 'download'])->name('sales.download');
+    });
+
     // Analytics Dashboard
     Route::middleware(['permission:'.PermissionEnum::VIEW_ANALYTICS->value])->group(function () {
         Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
