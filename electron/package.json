@@ -24,17 +24,7 @@
       "output": "dist"
     },
     "files": [
-      "**/*",
-      "../app/**/*",
-      "../bootstrap/**/*",
-      "../config/**/*",
-      "../database/**/*",
-      "../public/**/*",
-      "../routes/**/*",
-      "../storage/**/*",
-      "../vendor/**/*",
-      "../artisan",
-      "../composer.json"
+      "**/*"
     ],
     "extraResources": [
       {
@@ -42,6 +32,23 @@
         "to": "bin",
         "filter": [
           "**/*"
+        ]
+      },
+      {
+        "from": "..",
+        "to": "app",
+        "filter": [
+          "app/**/*",
+          "bootstrap/**/*",
+          "config/**/*",
+          "database/**/*",
+          "public/**/*",
+          "resources/views/**/*",
+          "routes/**/*",
+          "storage/**/*",
+          "vendor/**/*",
+          "artisan",
+          "composer.json"
         ]
       }
     ],

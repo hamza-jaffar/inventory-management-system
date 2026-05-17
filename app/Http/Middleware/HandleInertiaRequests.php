@@ -36,15 +36,39 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $settings = SettingService::allSettings();
+        try {
+            $settings = SettingService::allSettings();
+        } catch (\Throwable $e) {
+            $settings = collect();
+        }
+
+        try {
+            $user = $request->user();
+            $permissions = $user ? $user->getAllPermissions()->pluck('name') : [];
+            $roles = $user ? $user->getRoleNames() : [];
+        } catch (\Throwable $e) {
+            $user = null;
+            $permissions = [];
+            $roles = [];
+        }
+
+        try {
+            $successFlash = $request->session()->get('success');
+            $errorFlash = $request->session()->get('error');
+            $createdOrderFlash = $request->session()->get('created_order');
+        } catch (\Throwable $e) {
+            $successFlash = null;
+            $errorFlash = null;
+            $createdOrderFlash = null;
+        }
 
         return [
             ...parent::share($request),
             'name' => $settings->get('app_name', config('app.name')),
             'auth' => [
-                'user' => $request->user(),
-                'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
-                'roles' => $request->user() ? $request->user()->getRoleNames() : [],
+                'user' => $user,
+                'permissions' => $permissions,
+                'roles' => $roles,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'settings' => [
@@ -60,9 +84,9 @@ class HandleInertiaRequests extends Middleware
                 'app_email' => $settings->get('app_email'),
             ],
             'flash' => [
-                'success' => $request->session()->get('success'),
-                'error' => $request->session()->get('error'),
-                'created_order' => $request->session()->get('created_order'),
+                'success' => $successFlash,
+                'error' => $errorFlash,
+                'created_order' => $createdOrderFlash,
             ],
         ];
     }

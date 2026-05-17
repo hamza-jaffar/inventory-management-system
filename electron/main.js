@@ -68,8 +68,8 @@ function ensureDatabaseExists() {
     const dbPath = path.join(userDataPath, 'database.sqlite');
     let isFresh = false;
     
-    if (!fs.existsSync(dbPath)) {
-        logToFile(`Database not found. Creating a new SQLite database at: ${dbPath}`);
+    if (!fs.existsSync(dbPath) || fs.statSync(dbPath).size === 0) {
+        logToFile(`Database not found or is empty. Creating/resetting a new SQLite database at: ${dbPath}`);
         fs.writeFileSync(dbPath, '');
         isFresh = true;
     } else {
@@ -79,8 +79,27 @@ function ensureDatabaseExists() {
     return { dbPath, isFresh };
 }
 
+// Ensure a persistent cryptographic APP_KEY exists for production environment security
+function ensureAppKeyExists() {
+    const keyPath = path.join(userDataPath, '.app_key');
+    let appKey = '';
+    
+    if (!fs.existsSync(keyPath)) {
+        const crypto = require('crypto');
+        const key = crypto.randomBytes(32).toString('base64');
+        appKey = `base64:${key}`;
+        fs.writeFileSync(keyPath, appKey, 'utf8');
+        logToFile(`Generated secure, unique APP_KEY for this installation: ${appKey}`);
+    } else {
+        appKey = fs.readFileSync(keyPath, 'utf8').trim();
+        logToFile('Successfully loaded existing persistent APP_KEY.');
+    }
+    
+    return appKey;
+}
+
 // Run artisan command
-function runArtisanCommand(phpBin, phpIni, dbPath, args) {
+function runArtisanCommand(phpBin, phpIni, dbPath, appKey, args) {
     return new Promise((resolve, reject) => {
         logToFile(`Running artisan command: php artisan ${args.join(' ')}`);
         
@@ -90,6 +109,7 @@ function runArtisanCommand(phpBin, phpIni, dbPath, args) {
             DB_DATABASE: dbPath,
             APP_ENV: 'production',
             APP_DEBUG: 'false',
+            APP_KEY: appKey,
             SESSION_DRIVER: 'file',
             CACHE_STORE: 'file'
         };
@@ -189,6 +209,7 @@ async function startApp() {
         const phpBin = getPhpBinaryPath();
         const phpIni = getPhpIniPath();
         const { dbPath, isFresh } = ensureDatabaseExists();
+        const appKey = ensureAppKeyExists();
 
         // Check if application version has changed to minimize redundant migration boots
         const versionFilePath = path.join(userDataPath, '.version');
@@ -197,7 +218,6 @@ async function startApp() {
 
         if (!fs.existsSync(versionFilePath) || fs.readFileSync(versionFilePath, 'utf8') !== currentVersion) {
             versionChanged = true;
-            fs.writeFileSync(versionFilePath, currentVersion);
         }
 
         const shouldMigrate = isFresh || versionChanged || isDev;
@@ -206,11 +226,15 @@ async function startApp() {
         if (shouldMigrate) {
             try {
                 logToFile('Running database migrations...');
-                await runArtisanCommand(phpBin, phpIni, dbPath, ['migrate', '--force']);
+                await runArtisanCommand(phpBin, phpIni, dbPath, appKey, ['migrate', '--force']);
                 if (isFresh) {
                     logToFile('Seeding fresh Spatie roles, permissions and Admin accounts...');
-                    await runArtisanCommand(phpBin, phpIni, dbPath, ['db:seed', '--force']);
+                    await runArtisanCommand(phpBin, phpIni, dbPath, appKey, ['db:seed', '--force']);
                 }
+                
+                // Write version file ONLY after successful migrations and seeding!
+                fs.writeFileSync(versionFilePath, currentVersion, 'utf8');
+                logToFile('Database initialized and version file updated successfully.');
             } catch (dbInitError) {
                 logToFile(`Database Initialization Error: ${dbInitError.message}`);
                 dialog.showErrorBox(
@@ -238,8 +262,11 @@ async function startApp() {
             DB_DATABASE: dbPath,
             APP_ENV: 'production',
             APP_DEBUG: 'false',
+            APP_KEY: appKey,
             APP_URL: serverUrl,
-            PORT: port.toString()
+            PORT: port.toString(),
+            SESSION_DRIVER: 'file',
+            CACHE_STORE: 'file'
         };
 
         const serverArgs = [];
@@ -265,28 +292,43 @@ async function startApp() {
             logToFile(`PHP Server background thread exited with code ${code}`);
         });
 
-        // 4. Poll server snappily (every 80ms) to confirm it is active before showing main window
+        // 4. Poll server sequentially (one request at a time) to confirm it is active before showing main window
         let attempts = 0;
-        const checkServer = setInterval(() => {
+        const maxAttempts = 60; // Up to 12 seconds total timeout at 200ms increments
+        
+        function pollServer() {
             attempts++;
-            
             const http = require('http');
-            http.get(serverUrl, (res) => {
-                clearInterval(checkServer);
-                logToFile(`PHP server responds successfully. Loading window...`);
+            
+            // We poll the static robots.txt to perform an ultra-lightweight check that never blocks the single-threaded PHP server
+            const req = http.get(`${serverUrl}/robots.txt`, (res) => {
+                logToFile(`PHP server responds successfully with status ${res.statusCode}. Loading window...`);
                 createMainWindow(serverUrl);
-            }).on('error', (err) => {
-                if (attempts > 100) { // Max 8 seconds before timeout
-                    clearInterval(checkServer);
+            });
+            
+            req.on('error', (err) => {
+                if (attempts >= maxAttempts) {
                     logToFile('Error: PHP server failed to start within the timeout limit.');
                     dialog.showErrorBox(
                         'Backend Timeout',
                         `The local application services could not be reached. The PHP server did not start in time.\n\nPlease check logs at:\n${logPath}`
                     );
                     app.quit();
+                    return;
                 }
+                
+                // Wait 200ms before the next sequential poll to allow the single-threaded PHP server to breathe
+                setTimeout(pollServer, 200);
             });
-        }, 80);
+            
+            // Set socket timeout to prevent hanging connections from choking the server thread
+            req.setTimeout(1000, () => {
+                req.destroy();
+            });
+        }
+        
+        // Initiate the first sequential poll attempt
+        setTimeout(pollServer, 200);
 
     } catch (e) {
         logToFile(`Initialization Critical Error: ${e.message}`);
