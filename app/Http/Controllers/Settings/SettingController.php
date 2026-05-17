@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class SettingController extends Controller
@@ -59,6 +60,8 @@ class SettingController extends Controller
                 SettingService::setSetting($key, $value);
             }
         }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Business settings updated successfully.')]);
 
         return back()->with('status', 'settings-updated');
     }

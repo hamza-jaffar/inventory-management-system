@@ -50,6 +50,7 @@ enum PermissionEnum: string
     case MANAGE_ROLES = 'manage roles';
     case MANAGE_PERMISSIONS = 'manage permissions';
     case MANAGE_SETTINGS = 'manage settings';
+    case MANAGE_BACKUPS = 'manage backups';
 
     /**
      * Group permissions for easier seeding and UI display.
@@ -73,7 +74,7 @@ enum PermissionEnum: string
                 self::VIEW_LEDGERS,
             ],
             'System Administration' => [
-                self::MANAGE_USERS, self::MANAGE_ROLES, self::MANAGE_PERMISSIONS, self::MANAGE_SETTINGS,
+                self::MANAGE_USERS, self::MANAGE_ROLES, self::MANAGE_PERMISSIONS, self::MANAGE_SETTINGS, self::MANAGE_BACKUPS,
             ],
         ];
     }

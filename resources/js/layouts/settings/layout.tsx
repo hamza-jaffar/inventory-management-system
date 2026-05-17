@@ -26,6 +26,15 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                   },
               ]
             : []),
+        ...(can('manage backups')
+            ? [
+                  {
+                      title: 'Backups',
+                      href: '/backups',
+                      icon: null,
+                  },
+              ]
+            : []),
         {
             title: 'Profile',
             href: edit(),

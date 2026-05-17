@@ -19,4 +19,6 @@ enum SettingEnum: string
     case APP_EMAIL = 'app_email';
     case APP_LOGO_URL = 'app_logo_url';
     case APP_FAVICON_URL = 'app_favicon_url';
+    case BACKUP_FREQUENCY_DAYS = 'backup_frequency_days';
+    case BACKUP_ENABLED = 'backup_enabled';
 }
