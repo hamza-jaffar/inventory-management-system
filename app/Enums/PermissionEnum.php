@@ -45,6 +45,10 @@ enum PermissionEnum: string
     case CREATE_SALE = 'create sale';
     case VIEW_SALES = 'view sales';
 
+    // Analytics & Reports
+    case VIEW_ANALYTICS = 'view analytics';
+    case VIEW_REPORTS = 'view reports';
+
     // System Settings & Users
     case MANAGE_USERS = 'manage users';
     case MANAGE_ROLES = 'manage roles';
@@ -72,6 +76,9 @@ enum PermissionEnum: string
             'Stock Management' => [
                 self::VIEW_ADJUSTMENTS, self::CREATE_ADJUSTMENTS, self::EDIT_ADJUSTMENTS, self::DELETE_ADJUSTMENTS,
                 self::VIEW_LEDGERS,
+            ],
+            'Analytics & Reports' => [
+                self::VIEW_ANALYTICS, self::VIEW_REPORTS,
             ],
             'System Administration' => [
                 self::MANAGE_USERS, self::MANAGE_ROLES, self::MANAGE_PERMISSIONS, self::MANAGE_SETTINGS, self::MANAGE_BACKUPS,

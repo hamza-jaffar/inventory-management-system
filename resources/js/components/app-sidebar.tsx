@@ -9,6 +9,7 @@ import {
     ShoppingCart,
     Users,
     Calculator,
+    BarChart3,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -42,6 +43,11 @@ export function AppSidebar() {
             icon: LayoutGrid,
             // Everyone can view dashboard
         },
+        ...(can('view analytics') ? [{
+            title: 'Analytics Dashboard',
+            href: '/analytics',
+            icon: BarChart3,
+        }] : []),
         ...(can('view categories') ? [{
             title: 'Categories',
             href: categories.index(),

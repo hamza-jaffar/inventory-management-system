@@ -1,11 +1,13 @@
 <?php
 
 use App\Enums\PermissionEnum;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryLedgerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\SupplierController;
@@ -61,6 +63,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(['permission:'.PermissionEnum::VIEW_SALES->value])->group(function () {
         Route::get('sales', [SalesOrderController::class, 'index'])->name('sales.index');
+    });
+
+    // Analytics Dashboard
+    Route::middleware(['permission:'.PermissionEnum::VIEW_ANALYTICS->value])->group(function () {
+        Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('analytics/export', [AnalyticsController::class, 'exportPdf'])->name('analytics.export');
+    });
+
+    // Standalone PDF Reports
+    Route::middleware(['permission:'.PermissionEnum::VIEW_REPORTS->value])->group(function () {
+        Route::get('reports/stock-adjustments', [ReportsController::class, 'stockAdjustments'])->name('reports.stock-adjustments');
+        Route::get('reports/inventory-ledger', [ReportsController::class, 'inventoryLedger'])->name('reports.inventory-ledger');
+        Route::get('reports/sales-history', [ReportsController::class, 'salesHistory'])->name('reports.sales-history');
     });
 });
 
