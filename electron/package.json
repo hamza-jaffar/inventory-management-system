@@ -43,6 +43,7 @@
           "config/**/*",
           "database/**/*",
           "public/**/*",
+          "!public/hot",
           "resources/views/**/*",
           "routes/**/*",
           "storage/**/*",

@@ -152,8 +152,8 @@ function runArtisanCommand(phpBin, phpIni, dbPath, appKey, args) {
 // Initialize splash window
 function createSplashWindow() {
     splashWindow = new BrowserWindow({
-        width: 450,
-        height: 350,
+        width: 640,
+        height: 400,
         frame: false,
         transparent: true,
         resizable: false,
@@ -300,10 +300,38 @@ async function startApp() {
             attempts++;
             const http = require('http');
             
-            // We poll the static robots.txt to perform an ultra-lightweight check that never blocks the single-threaded PHP server
-            const req = http.get(`${serverUrl}/robots.txt`, (res) => {
-                logToFile(`PHP server responds successfully with status ${res.statusCode}. Loading window...`);
-                createMainWindow(serverUrl);
+            // Poll the root URL to ensure Laravel is fully booted.
+            // Use agent: false and Connection: close to prevent keep-alive connections 
+            // from blocking the single-threaded PHP built-in server.
+            const req = http.get(serverUrl, {
+                agent: false,
+                headers: {
+                    'Connection': 'close'
+                }
+            }, (res) => {
+                // Consume data to properly close the connection
+                res.on('data', () => {});
+                
+                res.on('end', () => {
+                    // If Laravel returns a 500-level error, it might be a temporary SQLite database lock. Retry.
+                    if (res.statusCode >= 500) {
+                        logToFile(`PHP server returned ${res.statusCode}. Transient error, retrying...`);
+                        if (attempts >= maxAttempts) {
+                            logToFile('Error: PHP server failed to stabilize within the timeout limit.');
+                            dialog.showErrorBox(
+                                'Backend Error',
+                                `The application backend failed to start correctly (Status ${res.statusCode}).\n\nPlease check logs at:\n${logPath}`
+                            );
+                            app.quit();
+                            return;
+                        }
+                        setTimeout(pollServer, 500); // Wait a bit longer before retrying
+                        return;
+                    }
+                    
+                    logToFile(`PHP server responds successfully with status ${res.statusCode}. Loading window...`);
+                    createMainWindow(serverUrl);
+                });
             });
             
             req.on('error', (err) => {
@@ -317,11 +345,11 @@ async function startApp() {
                     return;
                 }
                 
-                // Wait 200ms before the next sequential poll to allow the single-threaded PHP server to breathe
+                // Wait 200ms before the next sequential poll
                 setTimeout(pollServer, 200);
             });
             
-            // Set socket timeout to prevent hanging connections from choking the server thread
+            // Set socket timeout to prevent hanging connections
             req.setTimeout(1000, () => {
                 req.destroy();
             });
